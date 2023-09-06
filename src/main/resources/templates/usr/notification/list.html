@@ -1,0 +1,127 @@
+<html layout:decorate="~{usr/layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>알림</title>
+    <meta name="csrf-token" th:content="${_csrf.token}">
+</head>
+
+<body>
+<main layout:fragment="main">
+    <div class="hero-content flex flex-col mb-10 2 w-[32rem] max-w-lg mt-5">
+        <h1 class="text-2xl font-bold">알림</h1>
+        <div class="flex flex-col p-5 w-full">
+            <div th:each="notification, loop : ${notificationsResponse}">
+                <div th:if="${notification.typeCode.value.equals('OrderStatus')}">
+                    <a th:href="@{|/order/detail/${notification.orderId}|}" onclick="markNotificationAsRead(this)"
+                       th:data-notification-id="${notification.id}">
+                        <div th:class="'bg-base-100 border-b border-gray-200 p-5' + (${loop.first} ? ' border-t' : '')">
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between">
+                                    <span th:text="${#temporals.format(notification.createDate, 'yyyy-MM-dd')}"></span>
+                                    <span th:if="${notification.readDate == null}"
+                                          class="badge badge-warning">NEW</span>
+                                </div>
+                                <div>
+                                    <span>주문하신 </span>
+                                    <span th:text="${notification.productName}" class="font-bold "></span>
+                                    <span>의 상태가 </span>
+                                    <span th:class="${notification.newStatus.getNumber <= 1 ? 'f badge-info' :
+                                                (notification.newStatus.getNumber <= 3 ? 'badge badge-success' :
+                                                (notification.newStatus.getNumber == 4 ? 'badge badge-ghost' : 'badge badge-error'))}"
+                                          th:text="${notification.newStatus.value}"></span>
+                                    <span>(으)로 변경되었습니다.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div th:if="${notification.typeCode.value.equals('OrderPayment')}">
+                    <a th:href="@{|/order/management/${notification.orderId}|}" onclick="markNotificationAsRead(this)"
+                       th:data-notification-id="${notification.id}">
+                        <div th:class="'bg-base-100 border-b border-gray-200 p-5' + (${loop.first} ? ' border-t' : '')">
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between">
+                                    <span th:text="${#temporals.format(notification.createDate, 'yyyy-MM-dd')}"></span>
+                                    <span th:if="${notification.readDate == null}"
+                                          class="badge badge-warning">NEW</span>
+                                </div>
+                                <div>
+                                    <span class="badge badge-info badge-xs mx-1"></span>
+                                    <span>새로운 주문이 생성되었습니다. </br> 주문번호 :
+                                        <span th:text="${notification.orderNumber}" class="font-bold mt-1"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div th:if="${notification.typeCode.value.equals('OrderCanceled')}">
+                    <a th:href="@{|/order/management/${notification.orderId}|}" onclick="markNotificationAsRead(this)"
+                       th:data-notification-id="${notification.id}">
+                        <div th:class="'bg-base-100 border-b border-gray-200 p-5' + (${loop.first} ? ' border-t' : '')">
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between">
+                                    <span th:text="${#temporals.format(notification.createDate, 'yyyy-MM-dd')}"></span>
+                                    <span th:if="${notification.readDate == null}"
+                                          class="badge badge-warning">NEW</span>
+                                </div>
+                                <div>
+                                    <span class="badge badge-error badge-xs mx-1"></span>
+                                    <span>주문이 취소되었습니다 </br> 주문번호 :
+                                        <span th:text="${notification.orderNumber}" class="font-bold mt-1"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div th:if="${notification.typeCode.value.equals('Record')}">
+                    <a th:href="@{|/diary/checklist|}" onclick="markNotificationAsRead(this)"
+                       th:data-notification-id="${notification.id}">
+                        <div th:class="'bg-base-100 border-b border-gray-200 p-5' + (${loop.first} ? ' border-t' : '')">
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between">
+                                    <span th:text="${#temporals.format(notification.createDate, 'yyyy-MM-dd')}"></span>
+                                    <span th:if="${notification.readDate == null}"
+                                          class="badge badge-warning">NEW</span>
+                                </div>
+                                <div>
+                                    <span class="badge badge-accent mx-1" th:text="${#temporals.format(notification.diaryTime, 'HH:mm')}"></span>
+                                    <span>
+                                        <span th:text="${notification.diaryName}" class="font-bold mt-1"></span>
+                                        복용시간입니다.
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function markNotificationAsRead(element) {
+            var notificationId = element.getAttribute('data-notification-id');
+            console.log(notificationId)
+            const csrfToken = $('meta[name=csrf-token]').attr('content');
+
+            var url = '/notification/read/' + notificationId;
+            $.ajax({
+                type: 'POST',
+                url: url,
+                headers: {'X-CSRF-TOKEN': csrfToken},
+                success: function (response) {
+                    console.log('Notification marked as read');
+                },
+                error: function (error) {
+                    console.error('Failed to mark notification as read', error);
+                }
+            });
+        }
+    </script>
+
+
+</main>
+</body>
+
+</html>

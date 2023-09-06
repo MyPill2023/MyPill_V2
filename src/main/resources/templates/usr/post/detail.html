@@ -1,0 +1,245 @@
+<html layout:decorate="~{usr/layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>질문 상세</title>
+    <meta name="csrf-token" th:content="${_csrf.token}"> <!-- CSRF 토큰을 메타 태그로 포함 -->
+</head>
+
+<body>
+<main layout:fragment="main">
+    <div class="hero-content flex flex-col mb-10 2 w-[32rem] max-w-lg mt-5 !mb-28">
+        <h1 class="text-2xl font-bold mb-4">
+            <span class="font-bold" style="white-space: pre-wrap;"
+                  th:text="${postResponse.title}"></span>
+        </h1>
+        <div class="flex flex-col gap-5 w-full max-w-md mb-10 px-5">
+
+            <div class="card bg-base-100 border border-gray-200">
+                <div class="card-body">
+                    <img class="mb-2" th:if="${postResponse.imageFilePath != null}" th:src="${postResponse.imageFilePath}" alt="post_image"
+                         style="width: 500px; height: 300px;" />
+                    <div class="flex w-full mt-2 whitespace-normal"
+                         style="word-wrap: break-word; word-break: break-all;">
+                        <span style="white-space: pre-wrap;"
+                              th:text="${postResponse.content}"></span>
+                    </div>
+                    <div class="flex flex-col gap-1 items-end">
+                        <span class="text-gray-500 text-sm" style="word-wrap: break-word; word-break: break-all;"
+                              th:text="${#strings.length(postResponse.posterName) >= 2 ?
+                           postResponse.posterName.substring(0, 1) + '*' + postResponse.posterName.substring(2) : postResponse.posterName}">
+                        </span>
+                        <span class="text-gray-500 text-sm"
+                              th:text="'작성 : ' + ${#temporals.format(postResponse.createDate, 'yy-MM-dd hh:mm')}"></span>
+                    </div>
+                    <th:block th:if="${@rq.isLogin()}">
+                        <div th:if="${postResponse.posterId}==${@rq.member.id}" class="flex justify-end gap-2">
+                            <a th:href="@{/post/update/{id}(id=${postResponse.postId})}"
+                               class="btn  btn-outline flex gap-1 btn-xs">수정</a>
+                            <a class="btn  btn-outline flex gap-1 btn-xs" href="javascript:"
+                               onclick="if ( confirm('게시글을 삭제하시겠습니까?') ) $(this).next().submit();">
+                                삭제</a>
+                            <form hidden th:action="@{/post/delete/{id}(id=${postResponse.postId})}" method="POST">
+                                <input type="hidden" name="_method" value="delete">
+                            </form>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+            <form id="CommentRequest" th:action="@{/comment/create/{id}(id=${postResponse.postId})}" method="POST"
+                  class="flex flex-col gap-4 w-full whitespace-normal mt-3"
+                  onsubmit="CreateCommentForm__submit(this); return false;">
+                <label class="block text-gray-700 font-bold mb-1" for="newContent">
+                    답변 작성하기
+                </label>
+                <div class="relative">
+                    <textarea id="newContent" name="newContent" placeholder="답변을 입력해주세요." value="newContent"
+                              class="input input-bordered w-full rounded py-2 px-3 focus:outline-none focus:shadow-outline"
+                              style="height: 200px;"></textarea>
+                    <div id="newContentCount" class="absolute right-5 bottom-5">(0 / 1000)</div>
+                </div>
+                <div class="flex flex-row gap-2 justify-end">
+                    <a href="javascript:history.back()" class="btn h-full">
+                        돌아가기
+                    </a>
+                    <button type="submit" class="btn btn-success w-1/6">등록</button>
+                </div>
+            </form>
+
+
+            <div class="flex-row mt-10">
+                <i class="fa-regular fa-comment-dots fa-xl"></i>
+                <span class="text-xl font-bold">등록된 답변</span>
+            </div>
+            <div class="divider !my-1"></div>
+            <div th:if="${postResponse.commentCount == 0}" class="text-center mt-2">
+                등록된 답변이 없습니다.
+            </div>
+            <div th:each="commentResponse : ${commentResponses}" class="flex flex-col gap-1">
+                <div class="card bg-base-100 border border-gray-200 mt-2">
+                    <div class="card-body whitespace-normal"
+                         style="word-wrap: break-word; word-break: break-all;">
+                        <span
+                                style="white-space: pre-wrap;"
+                                th:id="'commentContent-' + ${commentResponse.commentId}"
+                                th:text="${commentResponse.content}"></span>
+                        <div th:id="'commentEditForm-' + ${commentResponse.commentId}" class="comment-edit-form"
+                             style="display: none;">
+                            <div class="relative">
+                                <textarea
+                                        class="input input-bordered w-full rounded py-2 px-3 focus:outline-none focus:shadow-outline"
+                                        th:id="'commentEdit-' + ${commentResponse.commentId}" name="commentEdit"
+                                        style="height: 100px;"></textarea>
+                                <div th:id="'commentEditCount-' + ${commentResponse.commentId}"
+                                     class="absolute right-5 bottom-5">
+                                    (0/1000)
+                                </div>
+                            </div>
+                            <div class="flex justify-end gap-2">
+                                <button class="btn btn-success btn-sm"
+                                        th:attr="onclick='saveComment(this, ' + ${commentResponse.commentId} + ');'">저장
+                                </button>
+                                <button class="btn btn-danger btn-sm"
+                                        th:attr="onclick='cancelEditComment(this, ' + ${commentResponse.commentId} + ');'">
+                                    취소
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1 items-end">
+                        <span class="text-gray-500 text-sm" style="word-wrap: break-word; word-break: break-all;"
+                              th:text="${#strings.length(commentResponse.commenterName) >= 2 ?
+                           commentResponse.commenterName.substring(0, 1) + '*' + commentResponse.commenterName.substring(2) : commentResponse.commenterName}">
+                        </span>
+                            <th:block
+                                    th:if="${commentResponse.createDate}==${commentResponse.modifyDate}">
+                                <span class="text-gray-500 text-sm"
+                                      th:text="'작성 : ' + ${#temporals.format(commentResponse.createDate, 'yy-MM-dd hh:mm')}">
+                                </span>
+                            </th:block>
+                            <th:block
+                                    th:unless="${commentResponse.createDate}==${commentResponse.modifyDate}">
+                                <span class="text-gray-500 text-sm"
+                                      th:text="'수정 : ' + ${#temporals.format(commentResponse.modifyDate, 'yy-MM-dd hh:mm')}">
+                                </span>
+                            </th:block>
+                        </div>
+                        <th:block th:if="${@rq.isLogin()}">
+                            <div th:if="${commentResponse.commenterId}==${@rq.member.id}"
+                                 class="flex justify-end gap-2">
+                                <button class="btn btn-outline flex gap-1 btn-xs"
+                                        th:attr="onclick='editComment(this, ' + ${commentResponse.commentId} + ');'">
+                                    수정
+                                </button>
+                                <a class="btn btn-outline flex gap-1 btn-xs" href="javascript:"
+                                   onclick="if ( confirm('댓글을 삭제하시겠습니까?') ) $(this).next().submit();">
+                                    삭제</a>
+                                <form hidden
+                                      th:action="@{/comment/delete/{postId}/{commentId}(commentId=${commentResponse.commentId}, postId=${postResponse.postId})}"
+                                      method="POST"></form>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function editComment(button, commentId) {
+
+            const commentContentElement = document.getElementById('commentContent-' + commentId);
+            const commentEditFormElement = document.getElementById('commentEditForm-' + commentId);
+
+            // 기존 댓글 내용을 가져와서 수정 폼에 설정
+            const commentContent = commentContentElement.innerText;
+            const commentEditInput = commentEditFormElement.querySelector('textarea');
+            commentEditInput.value = commentContent;
+
+            // 댓글 내용을 보여주는 부분을 숨기고 수정 폼을 보여줌
+            commentContentElement.style.display = 'none';
+            commentEditFormElement.style.display = 'block';
+
+            $(document).ready(function () {
+                $('#commentEdit-' + commentId).on('keyup', function () {
+                    $('#commentEditCount-' + commentId).html("(" + $(this).val().length + " / 1000)");
+
+                    if ($(this).val().length > 1000) {
+                        toastWarning("댓글은 최대 1000자까지 작성 가능합니다.");
+                        $(this).val($(this).val().substring(0, 1000));
+                        $('#commentEditCount-' + commentId).html("(1000 / 1000)");
+                    }
+                });
+            });
+        }
+
+        function saveComment(button, commentId) {
+
+            const commentEditFormElement = document.getElementById('commentEditForm-' + commentId);
+            const commentEditInput = commentEditFormElement.querySelector('textarea');
+            const newContent = commentEditInput.value;
+
+            const url = '/comment/update/' + commentId;
+            const csrfToken = $('meta[name=csrf-token]').attr('content'); // 메타 태그에서 CSRF 토큰 가져오기
+
+            // Ajax 요청을 사용하여 댓글 수정 API 호출
+            $.ajax({
+                type: 'post',
+                url: url,
+                headers: {'X-CSRF-TOKEN': csrfToken}, // 요청 헤더에 CSRF 토큰 추가},
+                data: {
+                    newContent: newContent
+                },
+                success: function (data) {
+                    // 요청 결과를 받아와서 동적으로 댓글 내용 업데이트
+                    if(data.resultCode.startsWith("S-")){
+                        const commentContentElement = document.getElementById('commentContent-' + commentId);
+                        commentContentElement.innerText = data.data;
+                        commentContentElement.style.display = 'block';
+                        commentEditFormElement.style.display = 'none';
+                        toastNotice(data.msg);
+                    } else {
+                        toastWarning(data.msg);
+                    }
+                },
+                error: function (error) {
+                    console.error('Error:', error);
+                }
+            });
+        }
+
+        function cancelEditComment(button, commentId) {
+            const commentContentElement = document.getElementById('commentContent-' + commentId);
+            const commentEditFormElement = document.getElementById('commentEditForm-' + commentId);
+            // 수정 취소 시, 댓글 내용 보여주는 부분을 숨기고 수정 폼을 숨김
+            commentContentElement.style.display = 'block';
+            commentEditFormElement.style.display = 'none';
+        }
+        $(document).ready(function () {
+            $('#newContent').on('keyup', function () {
+                $('#newContentCount').html("(" + $(this).val().length + " / 1000)");
+
+                if ($(this).val().length > 1000) {
+                    toastWarning("댓글은 최대 1000자까지 작성 가능합니다.");
+                    $(this).val($(this).val().substring(0, 1000));
+                    $('#newContentCount').html("(1000 / 1000)");
+                }
+            });
+        });
+
+        function CreateCommentForm__submit(form) {
+            form.newContent.value = form.newContent.value.trim();
+
+            if (form.newContent.value.length === 0) {
+                toastWarning("댓글 내용을 입력해주세요.");
+                form.newContent.focus();
+                return;
+            }
+            // 폼 발송
+            form.submit();
+        }
+
+    </script>
+
+
+</main>
+</body>
+
+</html>

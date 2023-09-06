@@ -1,0 +1,229 @@
+<html layout:decorate="~{usr/layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>상품 상세</title>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <meta name="productId" th:content="${productResponse.id}"/>
+    <meta name="_isLiked" th:content="${productResponse.isLiked}"/>
+</head>
+
+<body>
+<main layout:fragment="main">
+    <div class="hero-content flex flex-col my-10 w-[32rem]">
+
+        <div class="flex flex-col gap-5 w-full max-w-md mb-10 px-5">
+            <div class="border border-gray-200 text-center">
+                <img th:src="${productResponse.imageFilePath}"
+                     alt="product_image"
+                     style="width: 500px; height: 400px;"/>
+            </div>
+
+            <div class="flex flex-col justify-start w-full gap-2">
+                <h3 th:text="${productResponse.sellerName}"></h3>
+                <h1 class=" text-xl font-bold" th:text="${productResponse.name}"></h1>
+            </div>
+            <div class="flex justify-between">
+                <div class="flex items-center">
+                    <button id="like-button" class="heart-icon mx-1">
+                        <i th:if="${productResponse.isLiked}" class="fa-solid fa-heart" style="color: #ffb0b0;"></i>
+                        <i th:unless="${productResponse.isLiked}" class="fa-solid fa-heart"
+                           style="color: #C0C0C0;"></i>
+                    </button>
+                    <div id="like-count">
+                        <span class="text-xl" th:style="${productResponse.isLiked()} ? 'color:#ffb0b0;' : 'color:black;'"
+                              th:text="${productResponse.likeCount}">
+                        </span>
+                    </div>
+                </div>
+                <div class="flex justify-end w-full items-center">
+                    <span class="text-xl font-bold"
+                          th:text="${#numbers.formatInteger(productResponse.price, 0, 'COMMA') + '원'}"></span>
+                </div>
+            </div>
+            <div class="divider !my-2"></div>
+            <div th:unless="${@rq.isSeller() || @rq.isWaiter()}">
+                <div class="flex justify-between">
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="flex gap-3 justify-center items-center">
+                            <button class="badge badge-ghost badge-lg" type="button" onclick="decreaseQuantity()">-
+                            </button>
+                            <label for="quantity">수량</label>
+                            <input type="number" id="quantity" name="quantity" min="1" value="1"
+                                   class="input input-bordered  input-sm w-16" required>
+                            <button class="badge badge-ghost badge-lg" type="button" onclick="increaseQuantity()">+
+                            </button>
+                        </div>
+                        <div class="flex justify-end mt-5" th:if="${productResponse.stock < 1}">
+                            <span class="text-red-300">해당 상품은 품절되었습니다.</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-3 justify-end">
+                        <form id="directBuyForm" th:action="@{/order/create/single}" method="POST">
+                            <input type="hidden" name="productId" th:value="${productResponse.id}">
+                            <input type="hidden" id="directBuyQuantity" name="quantity">
+                            <button class="btn btn-accent" type="button" onclick="submitDirectBuyForm()"
+                                    th:disabled="${productResponse.stock < 1}">
+                                바로 구매하기
+                            </button>
+                        </form>
+                        <form th:action="@{|/cart/add|}" method="POST" class="flex justify-between"
+                              onsubmit="CartProductRequest__submit(this, event); return false;">
+                            <input type="hidden" id="productId" name="productId" th:value="${productResponse.id}">
+                            <input type="hidden" id="cartProductQuantity" name="quantity">
+                            <button class="btn btn-success" type="submit" th:disabled="${productResponse.stock < 1}">
+                                장바구니 담기
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="divider !my-2"></div>
+            <div class="card bg-base-100 border border-gray-200">
+                <div class="card-body">
+                    <h2 class="card-title mb-2">주요 영양성분</h2>
+                    <div th:each="nutrient, loop : ${productResponse.nutrients}">
+                        <p th:text="${nutrient.name}"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 border border-gray-200">
+                <div class="card-body">
+                    <h2 class="card-title mb-2">주요 기능</h2>
+                    <div th:each="category, loop : ${productResponse.categories}">
+                        <p th:text="${category.name}"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 border border-gray-200">
+                <div class="card-body">
+                    <h2 class="card-title mb-2">상품 상세 설명</h2>
+                    <span th:text="${productResponse.description}"></span>
+                </div>
+            </div>
+
+            <div sec:authorize="isAuthenticated()">
+                <div th:if="${productResponse.sellerId == @rq.member.id}" class="flex justify-end gap-3">
+                    <a th:href="@{|/product/update/${productResponse.id}|}"
+                       class="btn flex gap-1">
+                        수정하기
+                    </a>
+                    <a class="btn flex gap-1"
+                       href="javascript:;"
+                       onclick="if ( confirm('상품을 삭제하시겠습니까?') ) $(this).next().submit();">
+                        삭제하기</a>
+                    <form hidden th:action="@{|/product/delete/${productResponse.id}|}"
+                          method="POST">
+                        <input type="hidden" name="_method" value="delete">
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function increaseQuantity() {
+            let quantityInput = document.getElementById("quantity");
+            let currentQuantity = parseInt(quantityInput.value);
+            let newQuantity = currentQuantity + 1;
+            quantityInput.value = newQuantity;
+        }
+
+        function decreaseQuantity() {
+            let quantityInput = document.getElementById("quantity");
+            let currentQuantity = parseInt(quantityInput.value);
+            let newQuantity = currentQuantity - 1;
+            if (newQuantity < 1) {
+                newQuantity = 1;
+            }
+            quantityInput.value = newQuantity;
+        }
+
+        function CartProductRequest__submit(form, event) {
+            // 수량 선택 값 가져오기
+            let quantityInput = document.getElementById("quantity");
+            let quantity = parseInt(quantityInput.value);
+
+            // 유효성 검사: 수량이 1 이상인지 확인
+            if (quantity < 1) {
+                toastWarning("수량은 1 이상이어야 합니다.");
+                return;
+            }
+            document.getElementById("cartProductQuantity").value = quantity;
+
+
+            form.submit();
+        }
+
+        function submitDirectBuyForm() {
+            var quantityValue = document.getElementById("quantity").value;
+
+            var quantity = parseInt(quantityValue);
+
+            // 유효성 검사: 수량이 1 이상인지 확인
+            if (quantity < 1) {
+                toastWarning("수량은 1 이상이어야 합니다.");
+                return;
+            }
+
+            document.getElementById("directBuyQuantity").value = quantityValue;
+            document.getElementById("directBuyForm").submit();
+        }
+
+
+        $(function () {
+            $("#like-button").click(function () {
+                let isLikedStr = $("meta[name='_isLiked']").attr("content");
+                let isLiked = isLikedStr === "true";
+                isLiked = !isLiked;
+                // 좋아요 상태에 따라 요청 URL 변경
+                let url = isLiked ? '/product/like/create/' : '/product/like/delete/';
+
+                // 좋아요 수
+                let likeCount = parseInt($('#like-count').text());
+
+                let id = $("meta[name='productId']").attr("content");
+                $.ajax({
+                    type: 'post',
+                    url: url + id,
+                    headers: {
+                        'X-CSRF-TOKEN': $("meta[name='_csrf']").attr("content"),
+                        'X-CSRF-TOKEN-HEADER': $("meta[name='_csrf_header']").attr("content")
+                    },
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.resultCode.startsWith("S-")) {
+                            $('#like-count span').text(isLiked ? likeCount + 1 : likeCount - 1);
+                            if (isLiked) {
+                                $('#like-count span').css('color', '#ffb0b0');
+                            } else {
+                                $('#like-count span').css('color', 'black');
+                            }
+                            // 좋아요 상태에 따라 버튼 아이콘 변경
+                            if (isLiked) {
+                                $('#like-button').html(`<i class="fa-solid fa-heart" style="color: #ffb0b0;"></i>`);
+                            } else {
+                                $('#like-button').html(`<i class="fa-solid fa-heart" style="color: #C0C0C0;"></i>`);
+                            }
+                            let metaTag = document.querySelector('meta[name="_isLiked"]');
+                            metaTag.setAttribute('content', String(isLiked));
+                        } else {
+                            toastWarning(data.msg);
+                        }
+                    },
+                    error: function (error) {
+                        // 에러 처리
+                        console.error(error);
+                    }
+                });
+            });
+        });
+
+    </script>
+</main>
+</body>
+
+</html>

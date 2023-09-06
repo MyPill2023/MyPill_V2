@@ -1,0 +1,28 @@
+spring:
+  data:
+    redis:
+      host: 172.17.0.1
+  autoconfigure:
+    exclude:
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://172.17.0.1:3306/${custom.prod_db.dbName}?useUnicode=true&characterEncoding=utf8&allowPublicKeyRetrieval=true&useSSL=false&autoReconnect=true&serverTimezone=Asia/Seoul
+    username: '${custom.prod_db.username}'
+    password: '${custom.prod_db.password}'
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+        use_sql_comments: false
+logging:
+  level:
+    root: INFO
+    com.mypill: INFO
+    org.hibernate.orm.jdbc.bind: INFO
+    org.hibernate.orm.jdbc.extract: INFO
+custom:
+  site:
+    baseUrl: 'https://www.mypill.shop'

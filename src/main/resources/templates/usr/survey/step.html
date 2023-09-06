@@ -1,0 +1,86 @@
+<html layout:decorate="~{usr/layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
+<head>
+    <title>건강설문</title>
+</head>
+
+<body>
+<main layout:fragment="main">
+    <div class="hero-content flex flex-col justify-center my-10 ">
+        <div class="flex flex-col justify-center">
+            <h1 class="text-2xl text-center font-bold text-center mb-5">건강 설문</h1>
+            <div class="text-center flex items-center">
+                <span class="text-green-400 font-bold" th:text="${stepResponse.category.name}"></span>
+                <span>에 해당하는 것을</span>
+            </div>
+            <span class="text-center">모두 선택해주세요</span>
+        </div>
+
+        <h2 class="text-md bg-green-100 font-bold flex justify-center mt-5"></h2>
+        <div class="flex justify-center items-center ">
+            <form name="stepForm" th:action="step" class="flex flex-col gap-4 px-4"
+                  onsubmit="surveyStepFormSubmit(this); return false;">
+                <input type="hidden" name="stepNo" th:origin-value="${stepResponse.stepParam.stepNo}" th:value="${stepResponse.stepParam.stepNo}"
+                       th:next="${stepResponse.stepParam.nextStepNo}"
+                       th:prev="${stepResponse.stepParam.prevStepNo}">
+                <input th:each="categoryItemId : ${stepResponse.stepParam.categoryItemIds}" type="hidden"
+                       th:name="|category_${categoryItemId}|" value="Y">
+                <input th:each="questionId : ${stepResponse.stepParam.questionIds}" type="hidden" th:name="|question_${questionId}|"
+                       value="Y">
+                <div class="join join-vertical gap-4">
+                    <input onchange="if ( this.checked == false ) $(document.stepForm).find('input[type=hidden][name=' + $(this).attr('name') + ']').remove();"
+                           th:each="question : ${stepResponse.questions}" type="checkbox" th:name="|question_${question.id}|"
+                           th:aria-label="${question.content}" th:value="Y" class="btn btn-block btn-wide btn-outline bg-green-100 w-full"
+                           th:checked="${stepResponse.stepParam.isChecked(question.id)}"/>
+                </div>
+                <div class="grid flex justify-center gap-2 mt-5">
+                    <button onclick="document.stepForm.stepNo.value = document.stepForm.stepNo.getAttribute('prev')"
+                            th:unless="${stepResponse.stepParam.first}" class="btn btn-success w-36">이전 ([[${stepResponse.stepParam.prevStepNo}]]단계)
+                    </button>
+                    <button onclick="document.stepForm.stepNo.value = document.stepForm.stepNo.getAttribute('next')"
+                            th:unless="${stepResponse.stepParam.last}" class="btn btn-success  w-36">다음 ([[${stepResponse.stepParam.nextStepNo}]]단계)
+                    </button>
+                    <button onclick="document.stepForm.stepNo.value = '0';" th:if="${stepResponse.stepParam.last}" class="btn btn-success">작성완료</button>
+                </div>
+            </form>
+        </div>
+
+        <form name="completeForm" th:action="complete" method="GET">
+
+        </form>
+    </div>
+
+    <script>
+        function surveyStepFormSubmit(form) {
+            if ( form.stepNo.value != '0' && parseInt(form.stepNo.value) < parseInt(form.stepNo.getAttribute('origin-value'))) {
+                form.submit();
+                return;
+            }
+
+            const checkboxes = Array.from(form.querySelectorAll('input[type="checkbox"]')).filter(
+                (checkbox) => checkbox.checked
+            );
+
+            if (checkboxes.length < 1) {
+                toastWarning("1개 이상을 선택해주세요.");
+                return;
+            }
+
+            if (checkboxes.length > 3) {
+                toastWarning("3개 이하로 선택해주세요.");
+                return;
+            }
+
+            if ( form.stepNo.value != '0' ) {
+                form.submit();
+                return;
+            }
+
+            form.method = "GET";
+            form.action = "complete";
+            $(form).append($(document.completeForm).find('input[type=hidden]'));
+            form.submit();
+        }
+    </script>
+</main>
+</body>
+</html>

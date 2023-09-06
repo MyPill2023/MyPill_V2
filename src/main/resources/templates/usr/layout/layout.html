@@ -1,0 +1,272 @@
+<html layout:decorate="~{common/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
+
+<body>
+
+
+<div layout:fragment="introduce">
+    <div class="flex flex-col justify-center items-center gap-2 mt-5">
+        <span class="text-4xl font-bold">My💊Pill</span>
+        <span class="text-xl font-bold">설문 기반 영양소 추천 및 이커머스 플랫폼</span>
+    </div>
+
+    <div class="flex flex-col items-center gap-4">
+        <span>🦁 멋쟁이 사자처럼 백엔드스쿨 3기</span>
+        <div class="flex flex-col gap-1">
+            <span>개발기간 : 23/06/19 ~ 23/07/14(4주)</span>
+            <span>리팩토링 : 23/07/24 ~ </span>
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-4 items-center">
+        <a href="https://github.com/MyPill2023/MyPill">
+            <i class="fab fa-github"></i>
+            <span class="underline text-lg font-bold">팀 GitHub</span>
+        </a>
+        <div class="flex gap-2">
+            <span>BackEnd</span>
+            <span>송호준</span>
+            <span>
+                <a href="https://github.com/hojunking96">
+                    <i class="fab fa-github"></i>
+                </a>
+            </span>
+        </div>
+        <div class="flex gap-2">
+            <span>BackEnd</span>
+            <span>박진영</span>
+            <span>
+                <a href="https://github.com/jny0">
+                    <i class="fab fa-github"></i>
+                </a>
+            </span>
+        </div>
+        <div class="flex gap-2">
+            <span>BackEnd</span>
+            <span>이미정</span>
+            <span>
+                <a href="https://github.com/leemimi">
+                    <i class="fab fa-github"></i>
+                </a>
+            </span>
+        </div>
+
+    </div>
+
+    <div class="w-3/4 flex flex-col gap-3 items-center">
+        <span class="font-bold">테스트 계정 정보</span>
+        <table class="table">
+            <thead class="text-center">
+            <tr>
+                <th>회원유형</th>
+                <th>아이디</th>
+                <th>비밀번호</th>
+            </tr>
+            </thead>
+            <tbody class="text-center">
+            <tr>
+                <td>구매자</td>
+                <td>buyer1</td>
+                <td>buyer1234</td>
+            </tr>
+            <tr>
+                <td>판매자(인증)</td>
+                <td>seller1</td>
+                <td>seller1234</td>
+            </tr>
+            <tr>
+                <td>판매자(인증)</td>
+                <td>seller2</td>
+                <td>seller1234</td>
+            </tr>
+            <tr>
+                <td>판매자(미인증)</td>
+                <td>seller3</td>
+                <td>seller1234</td>
+            </tr>
+
+            </tbody>
+        </table>
+    </div>
+    <span>* 상품 결제 기능은 실제 결제가 되지 않는 테스트입니다.</span>
+</div>
+
+<!-- 공통 상단 -->
+<header layout:fragment="header">
+    <div class="navbar bg-base-100 shadow-sm">
+        <div class="navbar-start">
+            <a href="javascript:history.back()" class="btn btn-ghost btn-circle" >
+                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5H1m0 0 4 4M1 5l4-4"/>
+                </svg>
+            </a>
+            <div  th:if="${@rq.login}">
+                <a href="/cart" class="btn btn-ghost btn-circle" th:unless="${@rq.isSeller() || @rq.isWaiter()}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        <div class="navbar-center">
+            <a href="/" class="normal-case text-xl font-bold">MyPill </a>
+        </div>
+        <div class="navbar-end">
+            <a th:if="${@rq.logout}" href="/member/login" class="btn btn-ghost btn-circle">
+                <i class="fa-sharp fa-solid fa-arrow-right-to-bracket text-lg"></i>
+            </a>
+            <a th:if="${@rq.login}" href="javascript: document.logoutForm.submit();"  class="btn btn-ghost btn-circle">
+                <i class="fa-sharp fa-solid fa-arrow-right-from-bracket text-lg"></i>
+            </a>
+            <form style="display: none" name="logoutForm" method="POST" th:action="@{/member/logout}"
+                  hidden></form>
+            <script>
+                // 타임리프 문법(파라미터, ? 뒤에 입력된 매개변수들)
+                const params = JSON.parse('[( ${@rq.paramsJsonStr} )]');
+            </script>
+            <div  th:if="${@rq.login}">
+                <a href="/diary/checklist" class="btn btn-ghost btn-circle" th:unless="${@rq.isSeller() || @rq.isWaiter()}">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="1.25em" viewBox="0 0 576 512">
+                        <path d="M112 96c-26.5 0-48 21.5-48 48V256h96V144c0-26.5-21.5-48-48-48zM0 144C0 82.1 50.1 32 112 32s112 50.1 112 112V368c0 61.9-50.1 112-112 112S0 429.9 0 368V144zM554.9 399.4c-7.1 12.3-23.7 13.1-33.8 3.1L333.5 214.9c-10-10-9.3-26.7 3.1-33.8C360 167.7 387.1 160 416 160c88.4 0 160 71.6 160 160c0 28.9-7.7 56-21.1 79.4zm-59.5 59.5C472 472.3 444.9 480 416 480c-88.4 0-160-71.6-160-160c0-28.9
+                    7.7-56 21.1-79.4c7.1-12.3 23.7-13.1 33.8-3.1L498.5 425.1c10 10 9.3 26.7-3.1 33.8z"/></svg>
+                </a>
+                <a href="/notification/list" class="btn btn-ghost btn-circle" >
+                    <div class="indicator">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="1.25em" viewBox="0 0 448 512">
+                            <path d="M224 0c-17.7 0-32 14.3-32 32V49.9C119.5 61.4 64 124.2 64 200v33.4c0 45.4-15.5 89.5-43.8 124.9L5.3
+                        377c-5.8 7.2-6.9 17.1-2.9 25.4S14.8 416 24 416H424c9.2 0 17.6-5.3 21.6-13.6s2.9-18.2-2.9-25.4l-14.9-18.6C399.5 322.9 384 278.8 384 233.4V200c0-75.8-55.5-138.6-128-150.1V32c0-17.7-14.3-32-32-32zm0 96h8c57.4 0
+                        104 46.6 104 104v33.4c0 47.9 13.9 94.6 39.7 134.6H72.3C98.1 328 112 281.3 112 233.4V200c0-57.4 46.6-104 104-104h8zm64 352H224 160c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7s18.7-28.3 18.7-45.3z"/></svg>
+                        <span data-test="hasUnreadNotifications" th:if="${@rq.hasUnreadNotifications}"
+                              class="badge badge-xs badge-primary indicator-item"></span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- 공통 하단 -->
+<div layout:fragment="footer">
+    <div class="h-16 flex bg-base-100 border-0 border-t border-solid border-gray-100 justify-between">
+        <a th:unless="${@rq.isSeller() || @rq.isWaiter()}" href="/survey/guide" class="flex flex-col items-center justify-center cursor-pointer" style="flex-basis: 20%;">
+            <svg fill="#000000" class="h-8 w-8" viewBox="-2.4 -2.4 28.80 28.80" xmlns="http://www.w3.org/2000/svg"
+                 transform="rotate(0)">
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" stroke="#CCCCCC"
+                   stroke-width="0.144"></g>
+                <g id="SVGRepo_iconCarrier">
+                    <g id="Pill">
+                        <path d="M19.31,4.691a5.5,5.5,0,0,0-7.78,0l-6.84,6.84a5.5,5.5,0,0,0,3.89,9.39,5.524,5.524,0,0,0,3.89-1.61l6.84-6.84a5.5,5.5,0,0,0,0-7.78Zm-.71,7.07-3.42,3.42L8.82,8.821,12.24,5.4a4.5,4.5,0,0,1,7.68,3.17A4.429,4.429,0,0,1,18.6,11.761Z"></path>
+                    </g>
+                </g>
+            </svg>
+            <span class="btm-nav-label text-[11px]">건강설문</span>
+        </a>
+        <a th:if="${@rq.isSeller() || @rq.isWaiter()}" href="/product/create" class="flex flex-col items-center justify-center cursor-pointer" style="flex-basis: 20%;">
+            <svg class="h-8 w-8 p-0.5"  viewBox="0 -0.5 21 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>plus_circle [#1427]</title> <desc>Created with Sketch.</desc> <defs> </defs> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="Dribbble-Light-Preview" transform="translate(-179.000000, -600.000000)" fill="#000000"> <g id="icons" transform="translate(56.000000, 160.000000)"> <path d="M137.7,450 C137.7,450.552 137.2296,451 136.65,451 L134.55,451 L134.55,453 C134.55,453.552 134.0796,454 133.5,454 C132.9204,454 132.45,453.552 132.45,453 L132.45,451 L130.35,451 C129.7704,451 129.3,450.552 129.3,450 C129.3,449.448 129.7704,449 130.35,449 L132.45,449 L132.45,447 C132.45,446.448 132.9204,446 133.5,446 C134.0796,446 134.55,446.448 134.55,447 L134.55,449 L136.65,449 C137.2296,449 137.7,449.448 137.7,450 M133.5,458 C128.86845,458 125.1,454.411 125.1,450 C125.1,445.589 128.86845,442 133.5,442 C138.13155,442 141.9,445.589 141.9,450 C141.9,454.411 138.13155,458 133.5,458 M133.5,440 C127.70085,440 123,444.477 123,450 C123,455.523 127.70085,460 133.5,460 C139.29915,460 144,455.523 144,450 C144,444.477 139.29915,440 133.5,440" id="plus_circle-[#1427]"> </path> </g> </g> </g> </g></svg>
+            <span class="btm-nav-label text-[11px]">상품 등록</span>
+        </a>
+        <a href="/post/list" class="flex flex-col items-center justify-center cursor-pointer"
+           style="flex-basis: 20%;">
+            <svg class="h-8 w-8 p-0.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                <g id="SVGRepo_iconCarrier">
+                    <g>
+                        <path fill="none" d="M0 0h24v24H0z"></path>
+                        <path d="M5.455 15L1 18.5V3a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1v12H5.455zm-.692-2H16V4H3v10.385L4.763 13zM8 17h10.237L20 18.385V8h1a1 1 0 0 1 1 1v13.5L17.545 19H9a1 1 0 0 1-1-1v-1z"></path>
+                    </g>
+                </g>
+            </svg>
+            <span class="btm-nav-label text-[10px]">질문게시판</span>
+        </a>
+        <a href="/" class="flex flex-col items-center justify-center cursor-pointer" style="flex-basis: 20%;">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-0.5" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            <span class="btm-nav-label text-[11px]">메인</span>
+        </a>
+        <a href="/product/list/all" class="flex flex-col items-center justify-center cursor-pointer"
+           style="flex-basis: 20%;">
+            <svg class="h-8 w-8 p-1" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                <g id="SVGRepo_iconCarrier">
+                    <defs>
+                        <style>.cls-1 {
+                            fill: none;
+                            stroke: #020202;
+                            stroke-miterlimit: 10;
+                            stroke-width: 1.91px;
+                        }</style>
+                    </defs>
+                    <g id="Medicine">
+                        <path class="cls-1"
+                              d="M8.18,5.32V7.23L5.32,10.09v10.5A1.9,1.9,0,0,0,7.23,22.5h9.54a1.9,1.9,0,0,0,1.91-1.91V10.09L15.82,7.23V5.32"></path>
+                        <rect class="cls-1" x="7.23" y="1.5" width="9.55" height="3.82"></rect>
+                        <line class="cls-1" x1="8.18" y1="14.86" x2="15.82" y2="14.86"></line>
+                        <line class="cls-1" x1="12" y1="11.05" x2="12" y2="18.68"></line>
+                    </g>
+                </g>
+            </svg>
+            <span class="btm-nav-label text-[11px]">영양제 보기</span>
+        </a>
+        <a href="/member/myPage" class="flex flex-col items-center justify-center cursor-pointer"
+           style="flex-basis: 20%;">
+            <svg class="h-8 w-8 p-1" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                 fill="#000000">
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                <g id="SVGRepo_iconCarrier"><title>profile_round [#1342]</title>
+                    <desc>Created with Sketch.</desc>
+                    <defs></defs>
+                    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                        <g id="Dribbble-Light-Preview" transform="translate(-140.000000, -2159.000000)" fill="#000000">
+                            <g id="icons" transform="translate(56.000000, 160.000000)">
+                                <path d="M100.562548,2016.99998 L87.4381713,2016.99998 C86.7317804,2016.99998 86.2101535,2016.30298 86.4765813,2015.66198 C87.7127655,2012.69798 90.6169306,2010.99998 93.9998492,2010.99998 C97.3837885,2010.99998 100.287954,2012.69798 101.524138,2015.66198 C101.790566,2016.30298 101.268939,2016.99998 100.562548,2016.99998 M89.9166645,2004.99998 C89.9166645,2002.79398 91.7489936,2000.99998 93.9998492,2000.99998 C96.2517256,2000.99998 98.0830339,2002.79398 98.0830339,2004.99998 C98.0830339,2007.20598 96.2517256,2008.99998 93.9998492,2008.99998 C91.7489936,2008.99998 89.9166645,2007.20598 89.9166645,2004.99998 M103.955674,2016.63598 C103.213556,2013.27698 100.892265,2010.79798 97.837022,2009.67298 C99.4560048,2008.39598 100.400241,2006.33098 100.053171,2004.06998 C99.6509769,2001.44698 97.4235996,1999.34798 94.7348224,1999.04198 C91.0232075,1998.61898 87.8750721,2001.44898 87.8750721,2004.99998 C87.8750721,2006.88998 88.7692896,2008.57398 90.1636971,2009.67298 C87.1074334,2010.79798 84.7871636,2013.27698 84.044024,2016.63598 C83.7745338,2017.85698 84.7789973,2018.99998 86.0539717,2018.99998 L101.945727,2018.99998 C103.221722,2018.99998 104.226185,2017.85698 103.955674,2016.63598"
+                                      id="profile_round-[#1342]"></path>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </svg>
+            <span class="btm-nav-label text-[11px]">마이페이지</span>
+        </a>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    if (params.msg) {
+        toastNotice(params.msg[0]);
+    }
+
+    if (params.errorMsg) {
+        toastWarning(params.errorMsg[0]);
+    }
+
+    // history.back 에 의해서 돌아온 경우에 실행됨
+    // 평소에도 실행됨
+    $(window).bind("pageshow", function (event) {
+        const localStorageKeyAboutHistoryBackErrorMsg = "historyBackErrorMsg___" + location.href;
+
+        if (localStorage.getItem(localStorageKeyAboutHistoryBackErrorMsg)) {
+            toastWarning(localStorage.getItem(localStorageKeyAboutHistoryBackErrorMsg));
+            localStorage.removeItem(localStorageKeyAboutHistoryBackErrorMsg);
+        } else {
+            const localStorageKeyAboutHistoryBackErrorMsg = "historyBackErrorMsg___null";
+
+            if (localStorage.getItem(localStorageKeyAboutHistoryBackErrorMsg)) {
+                toastWarning(localStorage.getItem(localStorageKeyAboutHistoryBackErrorMsg));
+                localStorage.removeItem(localStorageKeyAboutHistoryBackErrorMsg);
+            }
+        }
+    });
+
+</script>
+</body>
+
+</html>
+

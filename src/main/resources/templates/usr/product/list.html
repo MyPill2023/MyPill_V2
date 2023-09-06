@@ -1,0 +1,154 @@
+<html layout:decorate="~{usr/layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>상품 리스트</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.6/flowbite.min.css" rel="stylesheet"/>
+</head>
+
+<body>
+<main layout:fragment="main">
+    <div class="hero-content flex flex-col my-10 2 w-[32rem] max-w-lg">
+        <div class="w-full max-w-md flex flex-col justify-center gap-5 mb-20 px-5">
+
+            <div id="accordion-collapse" data-accordion="collapse">
+                <h2 id="accordion-collapse-heading-1">
+                    <a th:href="@{|/product/list/all|}"
+                       class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-b-0 border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <span>전체보기</span>
+                    </a>
+                </h2>
+                <h2 id="accordion-collapse-heading-2">
+                    <button type="button"
+                            class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-b-0 border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            data-accordion-target="#accordion-collapse-body-2" aria-expanded="false"
+                            aria-controls="accordion-collapse-body-2">
+                        <span>영양 성분별</span>
+                        <svg data-accordion-icon class="w-6 h-6 shrink-0" fill="currentColor" viewBox="0 0 20 20"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                  clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </h2>
+                <div id="accordion-collapse-body-2" class="hidden" aria-labelledby="accordion-collapse-heading-2">
+                    <div class="p-5 border border-b-0 border-gray-200 dark:border-gray-700">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div th:each="nutrient, loop : ${productPageResponse.nutrients}">
+                                <a th:href="@{|/product/list/nutrient/${nutrient.id}|}"
+                                   th:class="${nutrient.name == productPageResponse.title ? 'badge badge-accent badge-lg hover:bg-green-100' :
+                                   'badge badge-ghost badge-lg hover:bg-green-100'}"
+                                   th:text="${nutrient.name}"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h2 id="accordion-collapse-heading-3">
+                    <button type="button"
+                            class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            data-accordion-target="#accordion-collapse-body-3" aria-expanded="false"
+                            aria-controls="accordion-collapse-body-3">
+                        <span>주요 기능별</span>
+                        <svg data-accordion-icon class="w-6 h-6 shrink-0" fill="currentColor" viewBox="0 0 20 20"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                  clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </h2>
+                <div id="accordion-collapse-body-3" class="hidden" aria-labelledby="accordion-collapse-heading-3">
+                    <div class="p-5 border border-t-0 border-gray-200 dark:border-gray-700">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div th:each="category, loop : ${productPageResponse.categories}">
+                                <a th:href="@{|/product/list/category/${category.id}|}"
+                                   th:class="${category.name == productPageResponse.title ? 'badge badge-accent badge-lg hover:bg-green-100' :
+                                   'badge badge-ghost badge-lg hover:bg-green-100'}"
+                                   th:text="${category.name}"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <h1 class="text-2xl font-bold text-center my-5" th:text="${productPageResponse.title}">
+            </h1>
+
+            <div th:each="product, loop : ${productPageResponse.productPage}"
+                 class="bg-base-100 border-b border-gray-200 pt-3 pb-6">
+                <a th:href="@{|/product/detail/${product.id}|}">
+
+                    <div class="flex justify-around gap-5">
+                        <div style="width: 100px; height: 100px;">
+                            <img th:src="${product.imageFilePath}" alt="product_image"
+                                 class="object-contain"
+                                 style="width: 100px; height: 100px; object-fit: cover; object-position: center; ">
+                        </div>
+                        <div class="flex flex-col gap-3 w-4/6">
+                            <div class="flex flex-col gap-1">
+                                <h3 th:text="${product.sellerName}"></h3>
+                                <h1 th:text="${product.name}" class="text-lg font-bold"></h1>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="items-center">
+                                    <i class="fa-solid fa-heart" style="color: #ffb0b0;"></i>
+                                    <span th:text="${product.likeCount}"></span>
+                                </div>
+                                <span class="text-lg font-bold"
+                                      th:text="${#numbers.formatInteger(product.price, 0, 'COMMA') + '원'}"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                </a>
+            </div>
+
+            <div class="pagination">
+                <ul class="flex justify-center">
+                    <li>
+                        <a th:if="${productPageResponse.productPage.hasPrevious()} and ${productPageResponse.productPage.number != 0}"
+                           th:href="@{${productPageResponse.pageUrl}(pageNumber=0, pageSize=${productPageResponse.productPage.size})}"
+                           class="text-blue-500 hover:text-blue-700 mr-4">
+                            처음
+                        </a>
+                    </li>
+                    <li th:if="${productPageResponse.productPage.hasPrevious()}">
+                        <a th:href="@{${productPageResponse.pageUrl}(pageNumber=${productPageResponse.productPage.number - 1}, pageSize=${productPageResponse.productPage.size})}"
+                           class="text-blue-500 hover:text-blue-700 mr-4">
+                            이전
+                        </a>
+                    </li>
+                    <li th:each="pageNum : ${#numbers.sequence(0, productPageResponse.productPage.totalPages - 1)}"
+                        th:class="${productPageResponse.productPage.totalPages > 1 and pageNum >= productPageResponse.productPage.number - 2 and pageNum <= productPageResponse.productPage.number + 2} ? 'mr-4' : ''">
+                        <a th:if="${productPageResponse.productPage.totalPages > 1 and pageNum >= productPageResponse.productPage.number - 2 and pageNum <= productPageResponse.productPage.number + 2}"
+                           th:href="@{${productPageResponse.pageUrl}(pageNumber=${pageNum}, pageSize=${productPageResponse.productPage.size})}"
+                           class="text-blue-500 hover:text-blue-700 font-bold"
+                           th:class="${pageNum == productPageResponse.productPage.number ? 'text-blue-700' : ''}">
+                            <span th:text="${pageNum + 1}"></span>
+                        </a>
+                    </li>
+                    <li th:if="${productPageResponse.productPage.hasNext()}">
+                        <a th:href="@{${productPageResponse.pageUrl}(pageNumber=${productPageResponse.productPage.number + 1}, pageSize=${productPageResponse.productPage.size})}"
+                           class="text-blue-500 hover:text-blue-700">
+                            다음
+                        </a>
+                    </li>
+                    <li>
+                        <a th:if="${productPageResponse.productPage.hasNext()} and ${productPageResponse.productPage.number != productPageResponse.productPage.totalPages - 1}"
+                           th:href="@{${productPageResponse.pageUrl}(pageNumber=${productPageResponse.productPage.totalPages - 1}, pageSize=${productPageResponse.productPage.size})}"
+                           class="text-blue-500 hover:text-blue-700 ml-4">
+                            마지막
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.6/flowbite.min.js"></script>
+</main>
+</body>
+
+</html>
