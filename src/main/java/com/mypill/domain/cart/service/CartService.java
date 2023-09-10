@@ -26,7 +26,7 @@ public class CartService {
 
     @Transactional
     public Cart getOrCreateCart(Member actor) {
-        Cart cart = cartRepository.findByMemberId(actor.getId()).orElse(createCart(actor));
+        Cart cart = cartRepository.findCartByMemberId(actor.getId()).orElse(createCart(actor));
         return cartRepository.save(cart);
     }
 

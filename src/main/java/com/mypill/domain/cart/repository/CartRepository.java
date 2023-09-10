@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface CartRepository extends JpaRepository<Cart, Long> {
+public interface CartRepository extends JpaRepository<Cart, Long>, CartRepositoryCustom {
+    @EntityGraph(attributePaths = {"cartProducts", "cartProducts.product", "cartProducts.product.seller"})
     Optional<Cart> findByMemberId(Long memberId);
 }
