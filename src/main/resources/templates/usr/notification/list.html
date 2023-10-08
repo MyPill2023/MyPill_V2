@@ -2,7 +2,6 @@
 
 <head>
     <title>알림</title>
-    <meta name="csrf-token" th:content="${_csrf.token}">
 </head>
 
 <body>
@@ -103,13 +102,11 @@
         function markNotificationAsRead(element) {
             var notificationId = element.getAttribute('data-notification-id');
             console.log(notificationId)
-            const csrfToken = $('meta[name=csrf-token]').attr('content');
 
             var url = '/notification/read/' + notificationId;
             $.ajax({
                 type: 'POST',
                 url: url,
-                headers: {'X-CSRF-TOKEN': csrfToken},
                 success: function (response) {
                     console.log('Notification marked as read');
                 },

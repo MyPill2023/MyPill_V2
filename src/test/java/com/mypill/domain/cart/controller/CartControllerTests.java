@@ -107,7 +107,7 @@ class CartControllerTests {
     @Test
     @DisplayName("03 장바구니에 담긴 상품 삭제 성공")
     @WithMockUser(username = "testUser1", authorities = "BUYER")
-    void softDeleteCartProductSuccessTest() throws Exception {
+    void deleteCartProductSuccessTest() throws Exception {
         // GIVEN
         Product product1 = productService.create(new ProductRequest("테스트 상품1", "테스트 설명1",
                 12000L, 100L, asList(1L, 2L), asList(1L, 2L), emptyFile), testUserSeller1).getData();
@@ -124,7 +124,7 @@ class CartControllerTests {
         // THEN
         resultActions
                 .andExpect(handler().handlerType(CartController.class))
-                .andExpect(handler().methodName("softDeleteCartProduct"))
+                .andExpect(handler().methodName("deleteCartProduct"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern("/cart**"));
     }

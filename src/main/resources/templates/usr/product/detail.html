@@ -2,8 +2,6 @@
 
 <head>
     <title>상품 상세</title>
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <meta name="productId" th:content="${productResponse.id}"/>
     <meta name="_isLiked" th:content="${productResponse.isLiked}"/>
 </head>
@@ -189,10 +187,6 @@
                 $.ajax({
                     type: 'post',
                     url: url + id,
-                    headers: {
-                        'X-CSRF-TOKEN': $("meta[name='_csrf']").attr("content"),
-                        'X-CSRF-TOKEN-HEADER': $("meta[name='_csrf_header']").attr("content")
-                    },
                     dataType: "json",
                     success: function (data) {
                         if (data.resultCode.startsWith("S-")) {
