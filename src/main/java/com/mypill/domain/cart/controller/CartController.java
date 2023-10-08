@@ -65,8 +65,19 @@ public class CartController {
     @PreAuthorize("hasAuthority('BUYER')")
     @PostMapping("/delete")
     @Operation(summary = "장바구니에서 상품 삭제")
-    public String softDeleteCartProduct(@RequestParam Long cartProductId) {
+    public String deleteCartProduct(@RequestParam Long cartProductId) {
         RsData<CartProduct> deleteRsData = cartService.hardDeleteCartProduct(rq.getMember(), cartProductId);
+        if (deleteRsData.isFail()) {
+            return rq.historyBack(deleteRsData);
+        }
+        return rq.redirectWithMsg("/cart", deleteRsData);
+    }
+
+    @PreAuthorize("hasAuthority('BUYER')")
+    @GetMapping("/delete/all")
+    @Operation(summary = "장바구니에서 전체 상품 삭제")
+    public String deleteAllCartProduct() {
+        RsData<CartProduct> deleteRsData = cartService.hardDeleteAllCartProduct(rq.getMember());
         if (deleteRsData.isFail()) {
             return rq.historyBack(deleteRsData);
         }

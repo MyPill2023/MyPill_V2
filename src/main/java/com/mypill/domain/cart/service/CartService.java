@@ -26,7 +26,7 @@ public class CartService {
 
     @Transactional
     public Cart getOrCreateCart(Member actor) {
-        Cart cart = cartRepository.findCartByMemberId(actor.getId()).orElse(createCart(actor));
+        Cart cart = findCartByMemberId(actor.getId()).orElse(createCart(actor));
         return cartRepository.save(cart);
     }
 
@@ -105,8 +105,22 @@ public class CartService {
     }
 
     @Transactional
+    public RsData<CartProduct> hardDeleteAllCartProduct(Member actor) {
+        Cart cart = findCartByMemberId(actor.getId()).orElse(null);
+        if (cart == null) {
+            return RsData.of("F-1", "장바구니가 없습니다.");
+        }
+        cartProductRepository.deleteAll(cart.getCartProducts());
+        return RsData.of("S-1", "장바구니에서 모든 상품이 삭제되었습니다.");
+    }
+
+    @Transactional
     public void hardDeleteCartProductByOrderId(Long orderId) {
         cartProductRepository.deleteByOrderId(orderId);
+    }
+
+    public Optional<Cart> findCartByMemberId(Long memberId) {
+        return cartRepository.findCartByMemberId(memberId);
     }
 
     public Optional<CartProduct> findByCartIdAndProductId(Long cartId, Long productId) {
