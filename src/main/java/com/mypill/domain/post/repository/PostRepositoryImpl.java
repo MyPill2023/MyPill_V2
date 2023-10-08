@@ -57,7 +57,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
         long total = jpaQueryFactory
                 .selectFrom(post)
                 .where(condition)
-                .fetch().size();
+                .fetchCount();
         return new PageImpl<>(postResponse, pageable, total);
     }
 }
