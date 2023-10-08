@@ -68,7 +68,7 @@ public class Scheduler {
             lockAtLeastFor = "PT59S",
             lockAtMostFor = "PT59S"
     )
-    public void deleteComments() {
+    public void hardDeleteComments() {
         commentService.hardDelete();
     }
 

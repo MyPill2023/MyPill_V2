@@ -9,6 +9,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
+    properties:
+      hibernate:
+        default_batch_fetch_size: 500
 custom:
   site:
     baseUrl: http://localhost:8080

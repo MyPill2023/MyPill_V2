@@ -7,6 +7,5 @@ import java.util.List;
 
 public interface AddressRepository extends JpaRepository<Address, Long> {
     List<Address> findByMemberIdAndDeleteDateIsNull(Long memberId);
-
     int countByMemberIdAndDeleteDateIsNull(Long memberId);
 }
