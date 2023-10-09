@@ -53,7 +53,7 @@ class MemberServiceUnitTest {
                 .username(username)
                 .name("김철수")
                 .password("1234")
-                .email("test1@test.com")
+                .email(email)
                 .userType("구매자")
                 .build();
     }
