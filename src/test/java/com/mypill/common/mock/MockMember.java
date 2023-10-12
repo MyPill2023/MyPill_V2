@@ -1,4 +1,4 @@
-package com.mypill.common.factory;
+package com.mypill.common.mock;
 
 import com.mypill.domain.address.entity.Address;
 import com.mypill.domain.member.entity.Member;

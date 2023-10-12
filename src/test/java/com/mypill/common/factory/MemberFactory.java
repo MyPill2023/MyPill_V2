@@ -1,5 +1,6 @@
 package com.mypill.common.factory;
 
+import com.mypill.common.mock.MockMember;
 import com.mypill.domain.member.entity.Member;
 import com.mypill.domain.member.entity.Role;
 
