@@ -62,7 +62,7 @@ public class CommentService {
             return RsData.of("F-2", "본인 댓글만 삭제할 수 있습니다.");
         }
         comment.softDelete();
-        return RsData.of("S-1", "댓글 삭제가 완료되었습니다.");
+        return RsData.of("S-1", "댓글 삭제가 완료되었습니다.", comment);
     }
 
     public List<Comment> getMyComments(Member member) {

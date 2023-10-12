@@ -1,13 +1,16 @@
 package com.mypill.domain.comment.service;
 
+import com.mypill.common.factory.MemberFactory;
+import com.mypill.common.factory.PostFactory;
 import com.mypill.domain.comment.dto.request.CommentRequest;
+import com.mypill.domain.comment.dto.response.CommentResponse;
 import com.mypill.domain.comment.entity.Comment;
 import com.mypill.domain.comment.repository.CommentRepository;
 import com.mypill.domain.member.entity.Member;
-import com.mypill.domain.member.entity.Role;
 import com.mypill.domain.member.repository.MemberRepository;
 import com.mypill.domain.post.entity.Post;
 import com.mypill.domain.post.repository.PostRepository;
+import com.mypill.global.rsdata.RsData;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @Transactional
@@ -32,103 +34,115 @@ class CommentServiceTest {
     private PostRepository postRepository;
     @Autowired
     private MemberRepository memberRepository;
-    private CommentRequest commentRequest;
-    private Member buyer;
-    private Post savedPost;
+    private Member testMember;
+    private Post testPost;
 
     @BeforeEach()
     void beforeEach() {
-        commentRequest = new CommentRequest();
-        commentRequest.setNewContent("새 댓글");
-
-        Post post = Post.builder()
-                .title("글 제목")
-                .content("글 내용")
-                .build();
-
-        buyer = Member.builder()
-                .id(1L)
-                .username("user1")
-                .name("김철수")
-                .password("1234")
-                .role(Role.BUYER)
-                .email("cs@test.com")
-                .build();
-        buyer = memberRepository.save(buyer);
-        savedPost = postRepository.save(post);
+        testMember = memberRepository.save(MemberFactory.member("testMember"));
+        testPost = postRepository.save(PostFactory.post(testMember.getId(), "testPost"));
     }
-
 
     @Test
     @Transactional
-    @DisplayName("댓글 작성 테스트(구매자 회원)")
-    void createTest() {
+    @DisplayName("댓글 작성 성공")
+    void createSuccessTest() {
+        // GIVEN
+        CommentRequest request = new CommentRequest("comment");
+
         // WHEN
-        Comment comment = commentService.create(commentRequest, buyer, savedPost.getId()).getData();
+        Comment comment = commentService.create(request, testMember, testPost.getId()).getData();
 
         // THEN
-        assertTrue(commentRepository.findById(comment.getId()).isPresent());
-        assertThat(commentRepository.findById(comment.getId()).get().getPost().getId()).isEqualTo(savedPost.getId());
-        assertThat(commentRepository.findById(comment.getId()).get().getCommenterId()).isEqualTo(buyer.getId());
-        assertThat(commentRepository.findById(comment.getId()).get().getContent()).isEqualTo("새 댓글");
+        assertThat(comment.getContent()).isEqualTo("comment");
     }
 
     @Test
-    @DisplayName("댓글 수정 테스트(구매자 회원)")
-    void updateTest() {
+    @Transactional
+    @DisplayName("게시글에 댓글 목록 조회")
+    void getCommentsWithMembersSuccessTest() {
         // GIVEN
-        Comment comment = commentService.create(commentRequest, buyer, savedPost.getId()).getData();
+        commentRepository.save(new Comment(testPost, testMember.getId(), "comment1"));
+        commentRepository.save(new Comment(testPost, testMember.getId(), "comment2"));
+        commentRepository.save(new Comment(testPost, testMember.getId(), "comment3"));
 
         // WHEN
-        commentRequest.setNewContent("댓글 업데이트");
-        commentService.update(commentRequest, buyer, comment.getId());
+        List<CommentResponse> commentResponses = commentService.getCommentsWithMembers(testPost.getId());
 
         // THEN
-        assertTrue(commentRepository.findById(comment.getId()).isPresent());
-        assertThat(commentRepository.findById(comment.getId()).get().getPost().getId()).isEqualTo(savedPost.getId());
-        assertThat(commentRepository.findById(comment.getId()).get().getCommenterId()).isEqualTo(buyer.getId());
-        assertThat(commentRepository.findById(comment.getId()).get().getContent()).isEqualTo("댓글 업데이트");
+        assertThat(commentResponses).hasSize(3);
     }
 
     @Test
-    @DisplayName("댓글 삭제 테스트(구매자 회원)")
-    void deleteTest() {
+    @DisplayName("댓글 수정 성공")
+    void updateSuccessTest() {
         // GIVEN
-        Comment comment = commentService.create(commentRequest, buyer, savedPost.getId()).getData();
+        Comment comment = commentRepository.save(new Comment(testPost, testMember.getId(), "comment"));
+        CommentRequest request = new CommentRequest("updatedComment");
 
         // WHEN
-        commentService.softDelete(buyer, comment.getId());
+        String updatedComment = commentService.update(request, testMember, comment.getId()).getData();
 
         // THEN
-        assertTrue(commentRepository.findById(comment.getId()).isPresent());
-        assertThat(commentRepository.findById(comment.getId()).get().getDeleteDate()).isNotNull();
+        assertThat(updatedComment).isEqualTo("updatedComment");
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 - 존재하지 않는 댓글")
+    void updateFailTest_NonExistentComment() {
+        // GIVEN
+        CommentRequest request = new CommentRequest("updatedComment");
+
+        // WHEN
+        RsData rsData = commentService.update(request, testMember, 1L);
+
+        // THEN
+        assertThat(rsData.getResultCode()).isEqualTo("F-1");
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 - 작성자 불일치")
+    void updateFailTest_NonCommenter() {
+        // GIVEN
+        Member testMember2 = MemberFactory.member("testMember2");
+        Comment comment = commentRepository.save(new Comment(testPost, testMember.getId(), "comment"));
+        CommentRequest request = new CommentRequest("updatedComment");
+
+        // WHEN
+        RsData rsData = commentService.update(request, testMember2, comment.getId());
+
+        // THEN
+        assertThat(rsData.getResultCode()).isEqualTo("F-2");
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 성공")
+    void deleteSuccessTest() {
+        // GIVEN
+        Comment comment = commentRepository.save(new Comment(testPost, testMember.getId(), "comment"));
+
+        // WHEN
+        Comment deletedComment = commentService.softDelete(testMember, comment.getId()).getData();
+
+        // THEN
+        assertThat(deletedComment.getDeleteDate()).isNotNull();
     }
 
     @Test
     @DisplayName("내 댓글 목록 보기")
-    void getMyCommentsTest() {
+    void getMyCommentsSuccessTest() {
         // GIVEN
-        commentRequest.setNewContent("새 댓글");
-        commentService.create(commentRequest, buyer, savedPost.getId());
-        commentService.create(commentRequest, buyer, savedPost.getId());
-
-        Member buyer2 = Member.builder()
-                .id(2L)
-                .username("user2")
-                .name("김영희")
-                .password("1234")
-                .role(Role.BUYER)
-                .email("yh@test.com")
-                .build();
-        buyer2 = memberRepository.save(buyer2);
-        commentService.create(commentRequest, buyer2, savedPost.getId());
+        Member testMember2 = MemberFactory.member("testMember2");
+        commentRepository.save(new Comment(testPost, testMember.getId(), "comment1"));
+        commentRepository.save(new Comment(testPost, testMember.getId(), "comment2"));
+        commentRepository.save(new Comment(testPost, testMember2.getId(), "comment3"));
 
         // WHEN
-        List<Comment> comments1 = commentService.getMyComments(buyer);
-        List<Comment> comments2 = commentService.getMyComments(buyer2);
+        List<Comment> comments1 = commentService.getMyComments(testMember);
+        List<Comment> comments2 = commentService.getMyComments(testMember2);
 
         // THEN
-        assertThat(comments1.size()).isEqualTo(2);
-        assertThat(comments2.size()).isEqualTo(1);
+        assertThat(comments1).hasSize(2);
+        assertThat(comments2).hasSize(1);
     }
 }

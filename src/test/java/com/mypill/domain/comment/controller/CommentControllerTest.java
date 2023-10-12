@@ -1,5 +1,7 @@
 package com.mypill.domain.comment.controller;
 
+import com.mypill.common.factory.MemberFactory;
+import com.mypill.common.factory.PostFactory;
 import com.mypill.domain.comment.dto.request.CommentRequest;
 import com.mypill.domain.comment.entity.Comment;
 import com.mypill.domain.comment.service.CommentService;
@@ -38,29 +40,14 @@ class CommentControllerTest {
     @Autowired
     private MemberRepository memberRepository;
     private CommentRequest commentRequest;
-    private Post savedPost;
-    private Member buyer;
+    private Member testMember;
+    private Post testPost;
 
     @BeforeEach()
     void beforeEach() {
-        commentRequest = new CommentRequest();
-        commentRequest.setNewContent("새 댓글");
-
-        Post post = Post.builder()
-                .title("글 제목")
-                .content("글 내용")
-                .build();
-
-        buyer = Member.builder()
-                .id(1L)
-                .username("user1")
-                .name("김철수")
-                .password("1234")
-                .role(Role.BUYER)
-                .email("cs@test.com")
-                .build();
-        buyer = memberRepository.save(buyer);
-        savedPost = postRepository.save(post);
+        commentRequest = new CommentRequest("새 댓글");
+        testMember = memberRepository.save(MemberFactory.member("testMember"));
+        testPost = postRepository.save(PostFactory.post(testMember.getId(), "testPost"));
     }
 
     @Test
@@ -68,7 +55,7 @@ class CommentControllerTest {
     void createTest() throws Exception {
         // WHEN
         ResultActions resultActions = mvc
-                .perform(post("/comment/create/" + savedPost.getId())
+                .perform(post("/comment/create/" + testPost.getId())
                         .with(csrf()) // CSRF 키 생성
                         .param("newContent", commentRequest.getNewContent())
                 )
@@ -86,7 +73,7 @@ class CommentControllerTest {
     @DisplayName("댓글 수정 시 메서드 체크")
     void updateTest() throws Exception {
         // GIVEN
-        Comment comment = commentService.create(commentRequest, buyer, savedPost.getId()).getData();
+        Comment comment = commentService.create(commentRequest, testMember, testPost.getId()).getData();
 
         // WHEN
         ResultActions resultActions = mvc
@@ -107,11 +94,11 @@ class CommentControllerTest {
     @DisplayName("댓글 삭제 시 리다이렉션")
     void deleteTest() throws Exception {
         // GIVEN
-        Comment comment = commentService.create(commentRequest, buyer, savedPost.getId()).getData();
+        Comment comment = commentService.create(commentRequest, testMember, testPost.getId()).getData();
 
         // WHEN
         ResultActions resultActions = mvc
-                .perform(post("/comment/delete/" + savedPost.getId() + "/" + comment.getId())
+                .perform(post("/comment/delete/" + testPost.getId() + "/" + comment.getId())
                         .with(csrf()) // CSRF 키 생성
                 )
                 .andDo(print());
