@@ -110,7 +110,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public RsData<Order> checkIfOrderCanBeCancelled(Member buyer, Long orderId) {
+    public RsData<Order> checkIfOrderCanBeCanceled(Member buyer, Long orderId) {
         Order order = findByIdAndPaymentIsNotNull(orderId).orElse(null);
         if (order == null) {
             return RsData.of("F-1", "존재하지 않는 주문입니다.");
