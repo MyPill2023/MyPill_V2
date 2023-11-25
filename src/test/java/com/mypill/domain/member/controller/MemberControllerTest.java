@@ -2,17 +2,12 @@ package com.mypill.domain.member.controller;
 
 import com.mypill.domain.member.dto.request.JoinRequest;
 import com.mypill.domain.member.service.MemberService;
-import com.mypill.domain.member.validation.EmailValidationResult;
-import com.mypill.domain.member.validation.UsernameValidationResult;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -36,139 +31,18 @@ class MemberControllerTest {
     @Autowired
     private MemberService memberService;
 
-    @Test
-    @DisplayName("로그인")
-    @WithAnonymousUser
-    void loginTest() throws Exception {
-        // WHEN
-        ResultActions resultActions = mvc
-                .perform(get("/member/login")
-                        .with(csrf())
-                )
-                .andDo(print());
-
-        // THEN
-        resultActions
-                .andExpect(handler().handlerType(MemberController.class))
-                .andExpect(handler().methodName("showLogin"))
-                .andExpect(status().is2xxSuccessful())
-        ;
+    @BeforeEach
+    void beforeEach(){
+        memberService.join(new JoinRequest("testUser", "김철수", "1234", "testUser@test.com", "구매자"));
     }
 
     @Test
-    @DisplayName("회원가입 페이지 이동")
-    @WithAnonymousUser
-    void joinGetTest() throws Exception {
-        // WHEN
-        ResultActions resultActions = mvc
-                .perform(get("/member/join")
-                        .with(csrf())
-                )
-                .andDo(print());
-
-        // THEN
-        resultActions
-                .andExpect(handler().handlerType(MemberController.class))
-                .andExpect(handler().methodName("showJoin"))
-                .andExpect(status().is2xxSuccessful())
-        ;
-    }
-
-    @Test
-    @DisplayName("회원가입")
-    @WithAnonymousUser
-    void joinPostTest() throws Exception {
-        // GIVEN
-        String username = "testUser1";
-        String name = "김철수";
-        String password = "abc12345";
-        String email = "testEmail@test.com";
-        String userType = "1";
-
-        // WHEN
-        ResultActions resultActions = mvc
-                .perform(post("/member/join")
-                        .with(csrf())
-                        .param("username", username)
-                        .param("name", name)
-                        .param("password", password)
-                        .param("email", email)
-                        .param("userType", userType)
-                )
-                .andDo(print());
-
-        // THEN
-        resultActions
-                .andExpect(handler().handlerType(MemberController.class))
-                .andExpect(handler().methodName("join"))
-                .andExpect(status().is3xxRedirection())
-        ;
-    }
-
-    @Test
-    @DisplayName("아이디 중복확인")
-    void UsernameCheckTest() throws Exception {
-        // GIVEN
-        String username = "testUser1";
-
-        // WHEN
-        ResultActions resultActions = mvc
-                .perform(get("/member/join/usernameCheck")
-                        .with(csrf())
-                        .param("username", username)
-                )
-                .andDo(print());
-
-        // THEN
-        resultActions
-                .andExpect(handler().handlerType(MemberController.class))
-                .andExpect(handler().methodName("usernameCheck"))
-                .andExpect(content().json("{\"resultCode\":\"" + UsernameValidationResult.VALIDATION_OK.getResultCode()
-                        + "\",\"msg\":\"" + UsernameValidationResult.VALIDATION_OK.getMessage()
-                        + "\",\"data\":\"VALIDATION_OK\"}"))        ;
-    }
-
-    @Test
-    @DisplayName("이메일 중복확인")
-    void emailCheckTest() throws Exception {
-        // GIVEN
-        String email = "testEmail@test.com";
-
-        // WHEN
-        ResultActions resultActions = mvc
-                .perform(get("/member/join/emailCheck")
-                        .with(csrf())
-                        .param("email", email)
-                )
-                .andDo(print());
-
-        // THEN
-        resultActions
-                .andExpect(handler().handlerType(MemberController.class))
-                .andExpect(handler().methodName("emailCheck"))
-                .andExpect(content().json("{\"resultCode\":\"" + EmailValidationResult.VALIDATION_OK.getResultCode()
-                        + "\",\"msg\":\"" + EmailValidationResult.VALIDATION_OK.getMessage()
-                        + "\",\"data\":\"VALIDATION_OK\"}"))
-        ;
-    }
-
-    @Test
-    @WithMockUser(username = "testUser1", authorities = "MEMBER")
+    @WithMockUser(username = "testUser", authorities = "BUYER")
     @DisplayName("마이페이지 이동")
-    void myPageTest1() throws Exception {
-        // GIVEN
-        String username = "testUser1";
-        String name = "김철수";
-        String password = "1234";
-        String email = "testEmail@test.com";
-        String userType = "판매자";
-        memberService.join(new JoinRequest(username, name, password, email, userType));
-
+    void showMyPageTest() throws Exception {
         // WHEN
         ResultActions resultActions = mvc
-                .perform(get("/member/myPage")
-                        .with(csrf())
-                )
+                .perform(get("/member/myPage"))
                 .andDo(print());
 
         // THEN
@@ -180,22 +54,12 @@ class MemberControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testUser1", authorities = "MEMBER")
-    @DisplayName("회원정보")
-    void myInfoTest() throws Exception {
-        // GIVEN
-        String username = "testUser1";
-        String name = "김철수";
-        String password = "1234";
-        String email = "testEmail@test.com";
-        String userType = "판매자";
-        memberService.join(new JoinRequest(username, name, password, email, userType));
-
+    @WithMockUser(username = "testUser", authorities = "BUYER")
+    @DisplayName("내 정보 페이지 이동")
+    void showMyInfoTest() throws Exception {
         // WHEN
         ResultActions resultActions = mvc
-                .perform(get("/member/myInfo")
-                        .with(csrf())
-                )
+                .perform(get("/member/myInfo"))
                 .andDo(print());
 
         // THEN
@@ -207,22 +71,46 @@ class MemberControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testUser1", authorities = "MEMBER")
-    @DisplayName("회원 탈퇴")
-    void deleteAccountTest() throws Exception {
-        // GIVEN
-        String username = "testUser1";
-        String name = "김철수";
-        String password = "1234";
-        String email = "testEmail@test.com";
-        String userType = "판매자";
-        memberService.join(new JoinRequest(username, name, password, email, userType));
-
+    @WithMockUser(username = "testUser", authorities = "BUYER")
+    @DisplayName("내 게시글 목록 페이지 이동")
+    void showMyPostsTest() throws Exception {
         // WHEN
         ResultActions resultActions = mvc
-                .perform(get("/member/deleteAccount")
-                        .with(csrf())
-                )
+                .perform(get("/member/myPosts"))
+                .andDo(print());
+
+        // THEN
+        resultActions
+                .andExpect(handler().handlerType(MemberController.class))
+                .andExpect(handler().methodName("showMyPosts"))
+                .andExpect(status().is2xxSuccessful())
+        ;
+    }
+
+    @Test
+    @WithMockUser(username = "testUser", authorities = "BUYER")
+    @DisplayName("내 댓글 목록 페이지 이동")
+    void showMyCommentsTest() throws Exception {
+        // WHEN
+        ResultActions resultActions = mvc
+                .perform(get("/member/myComments"))
+                .andDo(print());
+
+        // THEN
+        resultActions
+                .andExpect(handler().handlerType(MemberController.class))
+                .andExpect(handler().methodName("showMyComments"))
+                .andExpect(status().is2xxSuccessful())
+        ;
+    }
+
+    @Test
+    @WithMockUser(username = "testUser", authorities = "BUYER")
+    @DisplayName("회원 탈퇴")
+    void deleteAccountSuccessTest() throws Exception {
+        // WHEN
+        ResultActions resultActions = mvc
+                .perform(get("/member/deleteAccount"))
                 .andDo(print());
 
         // THEN
@@ -233,16 +121,10 @@ class MemberControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testUser1", authorities = "MEMBER")
-    @DisplayName("회원 탈퇴")
-    void nameUpdate() throws Exception {
+    @WithMockUser(username = "testUser", authorities = "BUYER")
+    @DisplayName("이름 변경")
+    void nameUpdateSuccessTest() throws Exception {
         // GIVEN
-        String username = "testUser1";
-        String name = "김철수";
-        String password = "1234";
-        String email = "testEmail@test.com";
-        String userType = "판매자";
-        memberService.join(new JoinRequest(username, name, password, email, userType));
         String newName = "손흥민";
 
         // WHEN

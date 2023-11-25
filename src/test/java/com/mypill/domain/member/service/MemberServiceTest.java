@@ -1,5 +1,6 @@
 package com.mypill.domain.member.service;
 
+import com.mypill.common.factory.MemberFactory;
 import com.mypill.domain.attr.service.AttrService;
 import com.mypill.domain.member.dto.request.JoinRequest;
 import com.mypill.domain.member.entity.Member;
@@ -7,14 +8,11 @@ import com.mypill.domain.member.entity.Role;
 import com.mypill.domain.member.repository.MemberRepository;
 import com.mypill.domain.member.validation.EmailValidationResult;
 import com.mypill.domain.member.validation.UsernameValidationResult;
-import com.mypill.domain.product.entity.Product;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,19 +28,11 @@ class MemberServiceTest {
     private AttrService attrService;
     @Autowired
     private MemberRepository memberRepository;
-    private Member testUser1;
+    private Member testMember;
 
     @BeforeEach
     void beforeEach() {
-        testUser1 = Member.builder()
-                .username("testUser1")
-                .name("김철수")
-                .password("1234")
-                .role(Role.SELLER)
-                .email("test1@test.com")
-                .emailVerified(true)
-                .build();
-        memberRepository.save(testUser1);
+        testMember = memberRepository.save(MemberFactory.member("testMember"));
     }
 
     @Test
@@ -81,32 +71,24 @@ class MemberServiceTest {
     @DisplayName("ID로 회원검색 테스트")
     void findByIdTest() {
         // WHEN
-        Member member = memberService.findById(testUser1.getId()).orElse(null);
+        Member member = memberService.findById(testMember.getId()).orElse(null);
 
         // THEN
         assertThat(member).isNotNull();
-        assertThat(testUser1.getId()).isEqualTo(member.getId());
-        assertThat(testUser1.getUsername()).isEqualTo(member.getUsername());
-        assertThat(testUser1.getName()).isEqualTo(member.getName());
-        assertThat(testUser1.getPassword()).isEqualTo(member.getPassword());
-        assertThat(testUser1.getRole()).isEqualTo(member.getRole());
-        assertThat(testUser1.getEmail()).isEqualTo(member.getEmail());
+        assertThat(testMember.getId()).isEqualTo(member.getId());
+        assertThat(testMember.getUsername()).isEqualTo(member.getUsername());
     }
 
     @Test
     @DisplayName("회원 아이디로 회원검색 테스트")
     void findByUsernameTest() {
         // WHEN
-        Member member = memberService.findByUsername(testUser1.getUsername()).orElse(null);
+        Member member = memberService.findByUsername(testMember.getUsername()).orElse(null);
 
         // THEN
         assertThat(member).isNotNull();
-        assertThat(testUser1.getId()).isEqualTo(member.getId());
-        assertThat(testUser1.getUsername()).isEqualTo(member.getUsername());
-        assertThat(testUser1.getName()).isEqualTo(member.getName());
-        assertThat(testUser1.getPassword()).isEqualTo(member.getPassword());
-        assertThat(testUser1.getRole()).isEqualTo(member.getRole());
-        assertThat(testUser1.getEmail()).isEqualTo(member.getEmail());
+        assertThat(testMember.getId()).isEqualTo(member.getId());
+        assertThat(testMember.getUsername()).isEqualTo(member.getUsername());
     }
 
     @Test
@@ -115,25 +97,25 @@ class MemberServiceTest {
         String newName = "손흥민";
 
         // WHEN
-        Member member = memberService.updateName(testUser1, newName).getData();
+        Member member = memberService.updateName(testMember, newName).getData();
 
         // THEN
         assertThat(member).isNotNull();
-        assertThat(member.getUsername()).isEqualTo(testUser1.getUsername());
+        assertThat(member.getUsername()).isEqualTo(testMember.getUsername());
         assertThat(member.getName()).isEqualTo(newName);
-        assertThat(member.getRole()).isEqualTo(Role.SELLER);
-        assertThat(member.getEmail()).isEqualTo(testUser1.getEmail());
+        assertThat(member.getRole()).isEqualTo(testMember.getRole());
+        assertThat(member.getEmail()).isEqualTo(testMember.getEmail());
     }
 
     @Test
     @DisplayName("회원 탈퇴")
     void deleteAccountTest() {
         // WHEN
-        Member deletedMember = memberService.softDelete(testUser1).getData();
+        Member deletedMember = memberService.softDelete(testMember).getData();
 
         // THEN
         assertThat(deletedMember).isNotNull();
-        assertThat(deletedMember.getUsername()).isEqualTo(testUser1.getUsername());
+        assertThat(deletedMember.getUsername()).isEqualTo(testMember.getUsername());
         assertThat(deletedMember.getDeleteDate()).isNotNull();
     }
 
@@ -154,7 +136,7 @@ class MemberServiceTest {
     @DisplayName("회원가입 아이디 유효성 검증 테스트2 : 중복")
     void usernameValidationTest2() {
         // GIVEN
-        String username = testUser1.getUsername();
+        String username = testMember.getUsername();
 
         // WHEN
         UsernameValidationResult result = memberService.usernameValidation(username);
@@ -206,7 +188,7 @@ class MemberServiceTest {
     @DisplayName("회원가입 이메일 유효성 검증 테스트3 : 중복")
     void emailValidationTest3() {
         // GIVEN
-        String email = testUser1.getEmail();
+        String email = testMember.getEmail();
 
         // WHEN
         EmailValidationResult result = memberService.emailValidation(email);
@@ -232,15 +214,15 @@ class MemberServiceTest {
     @DisplayName("이메일 인증")
     void verifyEmailTest() {
         // GIVEN
-        String emailVerificationCode = "member__%d__extra__emailVerificationCode".formatted(testUser1.getId());
+        String emailVerificationCode = "member__%d__extra__emailVerificationCode".formatted(testMember.getId());
         String attr = attrService.get(emailVerificationCode, "");
 
         // WHEN
-        String resultCode = memberService.verifyEmail(testUser1.getId(), attr).getResultCode();
+        String resultCode = memberService.verifyEmail(testMember.getId(), attr).getResultCode();
 
         // THEN
         assertThat(resultCode).startsWith("S-");
-        assertTrue(memberRepository.findById(testUser1.getId()).isPresent());
-        assertTrue(memberRepository.findById(testUser1.getId()).get().isEmailVerified());
+        assertTrue(memberRepository.findById(testMember.getId()).isPresent());
+        assertTrue(memberRepository.findById(testMember.getId()).get().isEmailVerified());
     }
 }

@@ -77,7 +77,7 @@ public class CartController {
     @GetMapping("/delete/all")
     @Operation(summary = "장바구니에서 전체 상품 삭제")
     public String deleteAllCartProduct() {
-        RsData<CartProduct> deleteRsData = cartService.hardDeleteAllCartProduct(rq.getMember());
+        RsData<Cart> deleteRsData = cartService.hardDeleteAllCartProduct(rq.getMember());
         if (deleteRsData.isFail()) {
             return rq.historyBack(deleteRsData);
         }

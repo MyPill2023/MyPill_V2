@@ -1,26 +1,26 @@
 package com.mypill.domain.post.service;
 
+import com.mypill.common.factory.MemberFactory;
+import com.mypill.common.factory.PostFactory;
 import com.mypill.domain.member.entity.Member;
-import com.mypill.domain.member.entity.Role;
 import com.mypill.domain.member.repository.MemberRepository;
 import com.mypill.domain.post.dto.request.PostRequest;
 import com.mypill.domain.post.dto.response.PostResponse;
 import com.mypill.domain.post.entity.Post;
 import com.mypill.domain.post.repository.PostRepository;
+import com.mypill.global.rsdata.RsData;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @Transactional
@@ -33,158 +33,202 @@ class PostServiceTest {
     private PostRepository postRepository;
     @Autowired
     private MemberRepository memberRepository;
-    private PostRequest postRequest;
-    private Member buyer;
+    private Member testMember;
 
     @BeforeEach
     void beforeEach() {
-        MockMultipartFile emptyFile = new MockMultipartFile("imageFile", new byte[0]);
-
-        postRequest = new PostRequest();
-        postRequest.setTitle("게시글 제목");
-        postRequest.setContent("게시글 내용");
-        postRequest.setImageFile(emptyFile);
-
-        buyer = Member.builder()
-                .id(1L)
-                .username("user1")
-                .name("김철수")
-                .password("1234")
-                .role(Role.BUYER)
-                .email("cs@test.com")
-                .build();
-        buyer = memberRepository.save(buyer);
+        testMember = memberRepository.save(MemberFactory.member("testMember"));
     }
 
     @Test
-    @DisplayName("게시글 작성 테스트(구매자 회원)")
-    void createTest() {
-        // WHEN
-        Post post = postService.create(postRequest, buyer);
-
-        // THEN
-        assertTrue(postRepository.findById(post.getId()).isPresent());
-        assertThat(postRepository.findById(post.getId()).get().getPosterId()).isEqualTo(buyer.getId());
-        assertThat(postRepository.findById(post.getId()).get().getTitle()).isEqualTo(postRequest.getTitle());
-        assertThat(postRepository.findById(post.getId()).get().getContent()).isEqualTo(postRequest.getContent());
-    }
-
-    @Test
-    @DisplayName("게시글 수정 테스트(구매자 회원")
-    void updateTest() {
+    @DisplayName("게시글 등록 성공")
+    void createSuccessTest() {
         // GIVEN
-        Post post = postService.create(postRequest, buyer);
+        PostRequest postRequest = PostFactory.mockPostRequest("testPost");
 
         // WHEN
-        postRequest.setTitle("제목 업데이트");
-        postRequest.setContent("내용 업데이트");
-        postService.update(post.getId(), postRequest, buyer.getId());
+        Post post = postService.create(postRequest, testMember);
 
         // THEN
-        assertTrue(postRepository.findById(post.getId()).isPresent());
-        assertThat(postRepository.findById(post.getId()).get().getPosterId()).isEqualTo(buyer.getId());
-        assertThat(postRepository.findById(post.getId()).get().getTitle()).isEqualTo("제목 업데이트");
-        assertThat(postRepository.findById(post.getId()).get().getContent()).isEqualTo("내용 업데이트");
+        assertThat(post.getTitle()).isEqualTo(postRequest.getTitle());
     }
 
     @Test
-    @DisplayName("게시글 삭제 테스트(구매자 회원)")
-    void deleteTest() {
+    @DisplayName("게시글 상세 정보")
+    void showDetailSuccessTest() {
         // GIVEN
-        Post post = postService.create(postRequest, buyer);
+        Post post = postRepository.save(PostFactory.post(testMember.getId(), "testPost"));
 
         // WHEN
-        postService.softDelete(post.getId(), buyer);
+        RsData showDetailRsData = postService.showDetail(post.getId());
 
         // THEN
-        assertTrue(postRepository.findById(post.getId()).isPresent());
-        assertThat(postRepository.findById(post.getId()).get().getDeleteDate()).isNotNull();
+        assertThat(showDetailRsData.getResultCode()).isEqualTo("S-1");
     }
 
     @Test
-    @DisplayName("게시글 목록 - (구매자 1 : 2개 등록 / 구매자 2 : 1개 등록) -> 반환 게시글 수 테스트")
-    void getListTest() {
+    @DisplayName("수정 전 확인 성공")
+    void beforeUpdateSuccessTest() {
         // GIVEN
-        Member buyer2 = Member.builder()
-                .id(2L)
-                .username("user2")
-                .name("김영희")
-                .password("1234")
-                .role(Role.BUYER)
-                .email("yh@test.com")
-                .build();
-        buyer2 = memberRepository.save(buyer2);
-        postService.create(postRequest, buyer);
-        postService.create(postRequest, buyer);
-        postService.create(postRequest, buyer2);
+        Post post = postRepository.save(PostFactory.post(testMember.getId(), "testPost"));
+
+        // WHEN
+        RsData<Post> updateBeforeRsData =  postService.beforeUpdate(post.getId(), testMember.getId());
+
+        // THEN
+        assertThat(updateBeforeRsData.getResultCode()).isEqualTo("S-1");
+     }
+
+    @Test
+    @DisplayName("수정 전 확인 실패 - 존재하지 않는 게시물")
+    void beforeUpdateFailTest_NonExistentPost() {
+        // WHEN
+        RsData<Post> updateBeforeRsData = postService.beforeUpdate(1L, testMember.getId());
+
+        // THEN
+        assertThat(updateBeforeRsData.getResultCode()).isEqualTo("F-1");
+    }
+
+    @Test
+    @DisplayName("수정 전 확인 실패 - 작성자 불일치")
+    void beforeUpdateTest_NonPoster() {
+        // GIVEN
+        Post post = postRepository.save(PostFactory.post(testMember.getId(), "testPost"));
+
+        // WHEN
+        RsData<Post> updateBeforeRsData = postService.beforeUpdate(post.getId(), testMember.getId()+1);
+
+        // THEN
+        assertThat(updateBeforeRsData.getResultCode()).isEqualTo("F-2");
+    }
+
+    @Test
+    @DisplayName("게시글 수정 성공")
+    void updateSuccessTest() {
+        // GIVEN
+        Post post = postRepository.save(PostFactory.post(testMember.getId(), "testPost"));
+        PostRequest postRequest = PostFactory.mockPostRequest("newTestPost");
+
+        // WHEN
+        Post updatedPost = postService.update(post.getId(), postRequest, testMember.getId()).getData();
+
+        // THEN
+        assertThat(updatedPost.getTitle()).isEqualTo("newTestPost");
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 성공")
+    void softDeleteSuccessTest() {
+        // GIVEN
+        Post post = postRepository.save(PostFactory.post(testMember.getId(), "testPost"));
+
+        // WHEN
+        Post deletedPost = postService.softDelete(post.getId(), testMember).getData();
+
+        // THEN
+        assertThat(deletedPost.getId()).isEqualTo(post.getId());
+        assertThat(deletedPost.getDeleteDate()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 실패 - 존재하지 않는 게시물")
+    void softDeleteFailTest_NonExistentPost() {
+        // WHEN
+        RsData<Post> deletedPostRsData = postService.softDelete(1L, testMember);
+
+        // THEN
+        assertThat(deletedPostRsData.getResultCode()).isEqualTo("F-1");
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 실패 - 작성자 불일치")
+    void softDeleteUpdateTest_NonPoster() {
+        // GIVEN
+        Member testMember2 = memberRepository.save(MemberFactory.member("testMember2"));
+        Post post = postRepository.save(PostFactory.post(testMember.getId(), "testPost"));
+
+        // WHEN
+        RsData<Post> deletedPostRsData = postService.softDelete(post.getId(), testMember2);
+
+        // THEN
+        assertThat(deletedPostRsData.getResultCode()).isEqualTo("F-2");
+    }
+
+    @Test
+    @DisplayName("게시글 목록 조회 성공")
+    void getListSuccessTest() {
+        // GIVEN
+        postRepository.save(PostFactory.post("testPost1"));
+        postRepository.save(PostFactory.post("testPost2"));
+        postRepository.save(PostFactory.post("testPost3"));
 
         // WHEN
         List<Post> posts = postService.getList();
 
         // THEN
-        assertThat(posts.size()).isEqualTo(3);
+        assertThat(posts).hasSize(3);
     }
 
     @Test
-    @DisplayName("내 게시글 목록 - (구매자 1 : 2개 등록 / 구매자 2 : 1개 등록) -> 회원별 반환 게시글 수 테스트")
-    void getMyPostsTest() {
+    @DisplayName("내 게시글 목록 조회")
+    void getMyPostsSuccessTest() {
         // GIVEN
-        Member buyer2 = Member.builder()
-                .id(2L)
-                .username("user2")
-                .name("김영희")
-                .password("1234")
-                .role(Role.BUYER)
-                .email("yh@test.com")
-                .build();
-        buyer2 = memberRepository.save(buyer2);
-        postService.create(postRequest, buyer);
-        postService.create(postRequest, buyer);
-        postService.create(postRequest, buyer2);
+        Member testMember2 = memberRepository.save(MemberFactory.member("testMember2"));
+        postRepository.save(PostFactory.post(testMember.getId(), "testPost1"));
+        postRepository.save(PostFactory.post(testMember.getId(), "testPost2"));
+        postRepository.save(PostFactory.post(testMember2.getId(), "testPost3"));
 
         // WHEN
-        List<Post> posts1 = postService.getMyPosts(buyer);
-        List<Post> posts2 = postService.getMyPosts(buyer2);
+        List<Post> posts1 = postService.getMyPosts(testMember);
+        List<Post> posts2 = postService.getMyPosts(testMember2);
 
         // THEN
-        assertThat(posts1.size()).isEqualTo(2);
-        assertThat(posts2.size()).isEqualTo(1);
+        assertThat(posts1).hasSize(2);
+        assertThat(posts2).hasSize(1);
     }
 
 
     @Test
-    @DisplayName("게시글 제목 검색 테스트")
-    void searchTitle() {
+    @DisplayName("게시글 제목으로 검색")
+    void getPostsTest_searchByTitle() {
         // GIVEN
-        String keyword = "키워드";
-        postRequest.setTitle(keyword);
-        postService.create(postRequest, buyer);
-        postRequest.setTitle("무시");
-        postService.create(postRequest, buyer);
+        postRepository.save(PostFactory.post(testMember.getId(), "testPost"));
+        postRepository.save(PostFactory.post(testMember.getId(), "게시글"));
 
         // WHEN
-        Page<PostResponse> postResponse = postService.searchTitle(keyword, PageRequest.of(0, 10));
+        Page<PostResponse> postResponse = postService.getPosts("testPost", "title", 0, 10);
 
         // THEN
         assertThat(postResponse.getTotalElements()).isEqualTo(1);
-        assertTrue(postResponse.getContent().get(0).getTitle().contains(keyword));
+        assertTrue(postResponse.getContent().get(0).getTitle().contains("testPost"));
     }
 
     @Test
-    @DisplayName("게시글 내용 검색 테스트")
-    void searchContent() {
+    @DisplayName("게시글 내용으로 검색")
+    void getPostsTest_searchByContent() {
         // GIVEN
-        String keyword = "키워드";
-        postRequest.setContent(keyword);
-        postService.create(postRequest, buyer);
-        postRequest.setContent("무시");
-        postService.create(postRequest, buyer);
+        postRepository.save(PostFactory.post(testMember.getId(), "testPost", "testContent"));
+        postRepository.save(PostFactory.post(testMember.getId(), "게시글", "내용"));
 
         // WHEN
-        Page<PostResponse> postResponse = postService.searchContent(keyword, PageRequest.of(0, 10));
+        Page<PostResponse> postResponse = postService.getPosts("testContent", "content", 0, 10);
 
         // THEN
         assertThat(postResponse.getTotalElements()).isEqualTo(1);
-        assertTrue(postResponse.getContent().get(0).getContent().contains(keyword));
+        assertTrue(postResponse.getContent().get(0).getContent().contains("testContent"));
+    }
+
+    @Test
+    @DisplayName("삭제된 게시물 가져오기")
+    void getDeletedPostsSuccessTest() {
+        // GIVEN
+        postRepository.save(PostFactory.post("testPost"));
+        postRepository.save(PostFactory.post("deletedPost", LocalDateTime.now()));
+
+        // WHEN
+        List<Post> deletedPosts = postService.getDeletedPosts();
+
+        // THEN
+        assertThat(deletedPosts).hasSize(1);
     }
 }

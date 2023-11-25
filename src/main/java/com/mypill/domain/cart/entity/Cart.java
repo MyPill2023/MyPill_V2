@@ -28,6 +28,10 @@ public class Cart extends BaseEntity {
                 .build();
     }
 
+    public void clearCartProducts() {
+        this.cartProducts.clear();
+    }
+
     public void addCartProduct(CartProduct cartProduct) {
         this.cartProducts.add(cartProduct);
     }

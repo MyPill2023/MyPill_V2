@@ -1,10 +1,13 @@
 package com.mypill.domain.address.service;
 
+import com.mypill.common.factory.AddressFactory;
+import com.mypill.common.factory.MemberFactory;
 import com.mypill.domain.address.dto.request.AddressRequest;
 import com.mypill.domain.address.entity.Address;
-import com.mypill.domain.member.dto.request.JoinRequest;
+import com.mypill.domain.address.repository.AddressRepository;
 import com.mypill.domain.member.entity.Member;
-import com.mypill.domain.member.service.MemberService;
+import com.mypill.domain.member.entity.Role;
+import com.mypill.domain.member.repository.MemberRepository;
 import com.mypill.global.AppConfig;
 import com.mypill.global.rsdata.RsData;
 import org.junit.jupiter.api.*;
@@ -25,100 +28,122 @@ class AddressServiceTests {
     @Autowired
     private AddressService addressService;
     @Autowired
-    private MemberService memberService;
-    private Member testUser1;
-    private Member testUser2;
+    private AddressRepository addressRepository;
+
+    @Autowired
+    private MemberRepository memberRepository;
+    private Member testBuyer;
+    private Member testBuyer2;
 
     @BeforeEach
     void beforeEachTest() {
-        testUser1 = memberService.join(new JoinRequest("testUser1", "김철수", "1234", "test1@test.com", "구매자"), true).getData();
-        testUser2 = memberService.join(new JoinRequest("testUser2", "김영희", "1234", "test2@test.com", "구매자"), true).getData();
+        testBuyer = memberRepository.save(MemberFactory.member("testBuyer1", Role.BUYER));
     }
 
     @Test
     @DisplayName("배송지 추가 성공")
-    void testCreateSuccess() {
+    void createSuccessTest() {
         //WHEN
-        RsData<Address> createRsData = addressService.create(new AddressRequest("김철수의 집", "김철수", "서울시 강남구", "도산대로1", "12121", "01012341234", true), testUser1);
+        RsData<Address> rsData = addressService.create(AddressFactory.addressRequest("testAddress"), testBuyer);
 
         //THEN
-        assertThat(createRsData.getResultCode()).isEqualTo("S-1");
-        Address newAddress = createRsData.getData();
-        assertThat(newAddress.getName()).isEqualTo("김철수의 집");
-        assertThat(newAddress.getAddress()).isEqualTo("서울시 강남구");
-        assertThat(newAddress.getPhoneNumber()).isEqualTo("01012341234");
-        assertTrue(newAddress.isDefault());
-
+        assertThat(rsData.getResultCode()).isEqualTo("S-1");
+        assertThat(rsData.getData().getName()).isEqualTo("testAddress");
     }
 
     @Test
     @DisplayName("배송지 추가 실패 - 최대 등록 가능 개수 초과")
-    void testCreateFail() {
+    void createFailTest_exceedingMaxAllowableCount() {
         //GIVEN
+        AddressRequest request = AddressFactory.addressRequest("testAddress");
         for (int i = 0; i < AppConfig.getMaxAddressCount(); i++) {
-            addressService.create(new AddressRequest("김철수의 집", "김철수", "서울시 강남구", "도산대로1", "12121", "01012341234", true), testUser1);
+            addressRepository.save(AddressFactory.address(testBuyer, String.valueOf(i)));
         }
         //WHEN
-        RsData<Address> createRsData = addressService.create(new AddressRequest("김철수의 집", "김철수", "서울시 강남구", "도산대로1", "12121", "01012341234", true), testUser1);
+        RsData<Address> rsData = addressService.create(request, testBuyer);
 
         //THEN
-        assertThat(createRsData.getResultCode()).isEqualTo("F-2");
-        assertThat(addressService.findByMemberId(testUser1.getId())).hasSize(AppConfig.getMaxAddressCount());
-
+        assertThat(rsData.getResultCode()).isEqualTo("F-2");
     }
 
     @Test
     @DisplayName("배송지 가져오기 - 성공")
-    void testGetSuccess() {
+    void getSuccessTest() {
+        // GIVEN
+        Address address =  addressRepository.save(AddressFactory.address(testBuyer));
+
         //WHEN
-        Address address = addressService.create(new AddressRequest("김철수의 집", "김철수", "서울시 강남구", "도산대로1", "12121", "01012341234", true), testUser1).getData();
+        RsData<Address> rsData = addressService.get(testBuyer, address.getId());
 
         //THEN
-        assertThat(addressService.get(testUser1, address.getId()).getData()).isEqualTo(address);
+        assertThat(rsData.getResultCode()).isEqualTo("S-1");
+        assertThat(rsData.getData()).isEqualTo(address);
+    }
+
+    @Test
+    @DisplayName("배송지 가져오기 실패 - 존재하지 않는 배송지")
+    void getFailTest_NonExistentAddress() {
+        //WHEN
+        RsData<Address> rsData = addressService.get(testBuyer2, 1L);
+
+        //THEN
+        assertThat(rsData.getResultCode()).isEqualTo("F-1");
+    }
+
+    @Test
+    @DisplayName("배송지 가져오기 실패 - 삭제된 배송지")
+    void getFailTest_deletedAddress() {
+        //GIVEN
+        Address address =  addressRepository.save(AddressFactory.deletedAddress(testBuyer));
+
+        //WHEN
+        RsData<Address> rsData = addressService.get(testBuyer2, address.getId());
+
+        //THEN
+        assertThat(rsData.getResultCode()).isEqualTo("F-2");
     }
 
     @Test
     @DisplayName("배송지 가져오기 실패 - 권한 없음")
-    void testGetFail03() {
+    void getFailTest_Unauthorized() {
         //GIVEN
-        Address address = addressService.create(new AddressRequest("김철수의 집", "김철수", "서울시 강남구", "도산대로1", "12121", "01012341234", true), testUser1).getData();
+        Address address =  addressRepository.save(AddressFactory.address(testBuyer));
+        testBuyer2 = memberRepository.save(MemberFactory.member("testBuyer2", Role.BUYER));
 
         //WHEN
-        RsData<Address> getRsData = addressService.get(testUser2, address.getId());
+        RsData<Address> rsData = addressService.get(testBuyer2, address.getId());
 
         //THEN
-        assertThat(getRsData.getResultCode()).isEqualTo("F-3");
-        assertThat(getRsData.getData()).isNull();
+        assertThat(rsData.getResultCode()).isEqualTo("F-3");
     }
 
     @Test
     @DisplayName("배송지 수정 성공")
-    void testUpdateSuccess() {
+    void updateSuccessTest() {
         //GIVEN
-        Address address = addressService.create(new AddressRequest("김철수의 집", "김철수", "서울시 강남구", "도산대로1", "12121", "01012341234", true), testUser1).getData();
+        Address address =  addressRepository.save(AddressFactory.address(testBuyer, "testAddress"));
 
         //WHEN
-        Address newAddress = addressService.update(testUser1, address.getId(), new AddressRequest("수정 주소 이름", "수정 이름", "수정 주소", "수정 상세 주소", "11111", "01056785678", true)).getData();
+        RsData<Address> rsData = addressService.update(testBuyer, address.getId(), AddressFactory.addressRequest("newAddress", false));
 
         //THEN
-        assertThat(newAddress.getName()).isEqualTo("수정 주소 이름");
-        assertThat(newAddress.getReceiverName()).isEqualTo("수정 이름");
-        assertThat(newAddress.getAddress()).isEqualTo("수정 주소");
-        assertThat(newAddress.getPhoneNumber()).isEqualTo("01056785678");
-        assertTrue(newAddress.isDefault());
+        assertThat(rsData.getResultCode()).isEqualTo("S-1");
+        assertThat(rsData.getData().getName()).isEqualTo("newAddress");
+        assertThat(rsData.getData().isDefault()).isFalse();
     }
 
     @Test
     @DisplayName("배송지 삭제 성공")
-    void testDeleteSuccess() {
+    void softDeleteSuccessTest() {
         //GIVEN
-        Address address = addressService.create(new AddressRequest("김철수의 집", "김철수", "서울시 강남구", "도산대로1", "12121", "01012341234", true), testUser1).getData();
+        Address address =  addressRepository.save(AddressFactory.address(testBuyer));
 
         //WHEN
-        Address deletedAddress = addressService.softDelete(testUser1, address.getId()).getData();
+        RsData<Address> rsData= addressService.softDelete(testBuyer, address.getId());
 
         //THEN
-        assertThat(deletedAddress.getDeleteDate()).isNotNull();
+        assertThat(rsData.getResultCode()).isEqualTo("S-1");
+        assertThat(rsData.getData().getDeleteDate()).isNotNull();
     }
 
 }

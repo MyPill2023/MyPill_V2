@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -105,12 +106,13 @@ public class CartService {
     }
 
     @Transactional
-    public RsData<CartProduct> hardDeleteAllCartProduct(Member actor) {
+    public RsData<Cart> hardDeleteAllCartProduct(Member actor) {
         Cart cart = findCartByMemberId(actor.getId()).orElse(null);
         if (cart == null) {
             return RsData.of("F-1", "장바구니가 없습니다.");
         }
-        cartProductRepository.deleteAll(cart.getCartProducts());
+        cartProductRepository.deleteAll();
+        cart.clearCartProducts();
         return RsData.of("S-1", "장바구니에서 모든 상품이 삭제되었습니다.");
     }
 

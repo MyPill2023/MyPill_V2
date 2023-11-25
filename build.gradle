@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.0.6'
     id 'io.spring.dependency-management' version '1.1.0'
+    id 'jacoco'
 }
 
 group = 'com'
@@ -89,4 +90,18 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            // 테스트 커버리지에서 제외할 파일
+            fileTree(dir: it, exclude: [
+                    "com/mypill/domain/*/dto/*",
+                    "**/Q*.class"
+            ])
+        }))
+    }
 }

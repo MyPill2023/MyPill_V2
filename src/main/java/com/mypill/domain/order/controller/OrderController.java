@@ -129,7 +129,7 @@ public class OrderController {
     @PostMapping("/cancel/{orderId}")
     @Operation(summary = "주문 취소")
     public String cancel(@PathVariable Long orderId) {
-        RsData<Order> checkRsData = orderService.checkIfOrderCanBeCancelled(rq.getMember(), orderId);
+        RsData<Order> checkRsData = orderService.checkIfOrderCanBeCanceled(rq.getMember(), orderId);
         if (checkRsData.isFail()) {
             return rq.historyBack(checkRsData);
         }

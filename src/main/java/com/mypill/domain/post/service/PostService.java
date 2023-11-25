@@ -86,7 +86,7 @@ public class PostService {
             return RsData.of("F-2", "작성자만 삭제가 가능합니다.");
         }
         post.softDelete();
-        return RsData.of("S-1", "게시글이 삭제되었습니다.");
+        return RsData.of("S-1", "게시글이 삭제되었습니다.", post);
     }
 
     @Transactional(readOnly = true)
@@ -104,11 +104,11 @@ public class PostService {
         return postRepository.findPostsWithMembers(pageable);
     }
 
-    public Page<PostResponse> searchTitle(String keyword, Pageable pageable) {
+    private Page<PostResponse> searchTitle(String keyword, Pageable pageable) {
         return postRepository.findPostsWithMembersAndTitleContaining(keyword, pageable);
     }
 
-    public Page<PostResponse> searchContent(String keyword, Pageable pageable) {
+    private Page<PostResponse> searchContent(String keyword, Pageable pageable) {
         return postRepository.findPostsWithMembersAndContentContaining(keyword, pageable);
     }
 

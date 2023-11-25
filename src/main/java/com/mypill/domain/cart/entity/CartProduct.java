@@ -14,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder(toBuilder = true)
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class CartProduct extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

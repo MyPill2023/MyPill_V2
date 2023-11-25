@@ -3,10 +3,12 @@ package com.mypill.domain.member.dto.request;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
+@Builder
 public class JoinRequest {
     @NotBlank
     private String username;
