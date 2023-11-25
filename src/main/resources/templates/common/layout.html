@@ -60,7 +60,7 @@
 
 <script th:inline="javascript">
     if (params.msg) {
-        toastNotice(params.msg[0]);
+        toastNotice(params.msg[1][0]);
     }
 
     if (params.errorMsg) {
