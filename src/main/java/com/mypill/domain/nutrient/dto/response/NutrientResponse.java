@@ -3,9 +3,11 @@ package com.mypill.domain.nutrient.dto.response;
 import com.mypill.domain.nutrient.entity.Nutrient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class NutrientResponse {
     private Long id;
     private String name;

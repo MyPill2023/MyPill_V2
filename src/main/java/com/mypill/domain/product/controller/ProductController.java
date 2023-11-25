@@ -49,23 +49,23 @@ public class ProductController {
     @PostMapping("/create")
     @Operation(summary = "상품 등록")
     public String create(@Valid ProductRequest productRequest) {
-        RsData<Product> createRsData = productService.create(productRequest, rq.getMember());
+        RsData<ProductResponse> createRsData = productService.create(productRequest, rq.getMember());
         return rq.redirectWithMsg("/product/detail/%s".formatted(createRsData.getData().getId()), createRsData);
     }
 
     @GetMapping("/detail/{productId}")
     @Operation(summary = "상품 상세 페이지")
     public String showProduct(@PathVariable Long productId, Model model) {
-        RsData<Product> productRsData = productService.get(productId);
+        RsData<ProductResponse> productRsData = productService.get(productId);
         if (productRsData.isFail()) {
             return rq.historyBack(productRsData);
         }
 
-        boolean isLikedInput = false;
+        ProductResponse response = productRsData.getData();
         if (rq.isLogin() && productLikeService.findByMemberIdAndProductId(rq.getMember().getId(), productId) != null) {
-            isLikedInput = true;
+            response.setLiked(true);
         }
-        model.addAttribute("productResponse", ProductResponse.of(productRsData.getData(), isLikedInput));
+        model.addAttribute("productResponse", response);
 
         return "usr/product/detail";
     }
@@ -114,11 +114,11 @@ public class ProductController {
     @GetMapping("/update/{productId}")
     @Operation(summary = "상품 수정 페이지")
     public String showUpdateForm(@PathVariable Long productId, Model model) {
-        RsData<Product> productRsData = productService.get(productId);
+        RsData<ProductResponse> productRsData = productService.get(productId);
         if (productRsData.isFail()) {
             return rq.historyBack(productRsData);
         }
-        model.addAttribute("productResponse", ProductResponse.of(productRsData.getData()));
+        model.addAttribute("productResponse", productRsData.getData());
         populateModel(model);
         return "usr/product/update";
     }
@@ -127,10 +127,11 @@ public class ProductController {
     @PostMapping("/update/{productId}")
     @Operation(summary = "상품 수정")
     public String update(@PathVariable Long productId, @Valid ProductRequest productRequest) {
-        RsData<Product> updateRsData = productService.update(rq.getMember(), productId, productRequest);
+        RsData<ProductResponse> updateRsData = productService.update(rq.getMember(), productId, productRequest);
         if (updateRsData.isFail()) {
             return rq.historyBack(updateRsData);
         }
+        System.out.println(updateRsData.getMsg());
         return rq.redirectWithMsg("/product/detail/%s".formatted(productId), updateRsData);
     }
 
@@ -138,7 +139,7 @@ public class ProductController {
     @PreAuthorize("hasAuthority('SELLER')")
     @Operation(summary = "상품 삭제")
     public String delete(@PathVariable Long productId) {
-        RsData<Product> deleteRsData = productService.softDelete(rq.getMember(), productId);
+        RsData<ProductResponse> deleteRsData = productService.softDelete(rq.getMember(), productId);
         if (deleteRsData.isFail()) {
             return rq.historyBack(deleteRsData);
         }
