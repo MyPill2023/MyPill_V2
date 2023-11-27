@@ -42,6 +42,7 @@ import org.springframework.test.web.servlet.MockMvc;
         AddressController.class,
         BuyerController.class,
         CartController.class,
+        CommentController.class,
         ProductController.class
 
 })
@@ -57,6 +58,9 @@ public abstract class ControllerTest {
 
     @MockBean
     protected CartService cartService;
+
+    @MockBean
+    protected CommentService commentService;
 
     @MockBean
     protected OrderService orderService;
