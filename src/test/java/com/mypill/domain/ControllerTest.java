@@ -44,6 +44,7 @@ import org.springframework.test.web.servlet.MockMvc;
         CartController.class,
         CommentController.class,
         DiaryController.class,
+        HomeController.class,
         ProductController.class
 
 })
