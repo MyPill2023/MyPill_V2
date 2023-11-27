@@ -38,7 +38,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @ActiveProfiles("test")
 @WebMvcTest(controllers = {
-            ProductController.class
+        AddressController.class,
+        ProductController.class
 
 })
 public abstract class ControllerTest {
@@ -47,6 +48,9 @@ public abstract class ControllerTest {
 
     @Autowired
     protected ObjectMapper objectMapper;
+
+    @MockBean
+    protected AddressService addressService;
 
     @MockBean
     protected ProductService productService;
