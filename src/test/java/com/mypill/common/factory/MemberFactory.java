@@ -16,6 +16,10 @@ public class MemberFactory {
         return createMember(null, username, role);
     }
 
+    public static Member member(Long id, String username, Role role){
+        return createMember(id, username, role);
+    }
+
     public static Member member(Long id, String username){
         return createMember(id, username, Role.MEMBER);
     }

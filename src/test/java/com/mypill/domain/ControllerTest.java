@@ -3,6 +3,7 @@ package com.mypill.domain;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mypill.domain.address.controller.AddressController;
 import com.mypill.domain.address.service.AddressService;
+import com.mypill.domain.buyer.controller.BuyerController;
 import com.mypill.domain.cart.controller.CartController;
 import com.mypill.domain.cart.service.CartService;
 import com.mypill.domain.category.service.CategoryService;
@@ -39,6 +40,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @WebMvcTest(controllers = {
         AddressController.class,
+        BuyerController.class,
         ProductController.class
 
 })
@@ -51,6 +53,9 @@ public abstract class ControllerTest {
 
     @MockBean
     protected AddressService addressService;
+
+    @MockBean
+    protected OrderService orderService;
 
     @MockBean
     protected ProductService productService;
