@@ -88,7 +88,7 @@ public class MemberController {
     }
 
 
-    @PreAuthorize("hasAuthority('BUYER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/myPage")
     @Operation(summary = "마이페이지")
     public String showMyPage() {

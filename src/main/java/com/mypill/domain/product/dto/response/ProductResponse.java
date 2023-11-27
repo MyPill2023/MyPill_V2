@@ -7,6 +7,7 @@ import com.mypill.domain.product.entity.Product;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.Optional;
 @Data
 @Builder(toBuilder = true)
 @AllArgsConstructor
+@NoArgsConstructor
 public class ProductResponse {
 
     private Long id;
@@ -56,4 +58,9 @@ public class ProductResponse {
     public static ProductResponse of(Product product, boolean isLikedInput) {
         return createProductResponse(product, isLikedInput);
     }
+
+    public static ProductResponse se(Product product) {
+        return createProductResponse(product, false);
+    }
+
 }
