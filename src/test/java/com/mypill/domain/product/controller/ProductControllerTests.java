@@ -1,62 +1,40 @@
 package com.mypill.domain.product.controller;
 
-
-import com.mypill.domain.member.dto.request.JoinRequest;
+import com.mypill.common.factory.MemberFactory;
+import com.mypill.domain.ControllerTest;
 import com.mypill.domain.member.entity.Member;
-import com.mypill.domain.member.service.MemberService;
+import com.mypill.domain.member.entity.Role;
 import com.mypill.domain.product.dto.request.ProductRequest;
-import com.mypill.domain.product.service.ProductService;
-import com.mypill.domain.product.entity.Product;
-import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import com.mypill.domain.product.dto.response.ProductResponse;
+import com.mypill.global.rsdata.RsData;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
 
-import static java.util.Arrays.asList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@ActiveProfiles("test")
-@TestMethodOrder(MethodOrderer.MethodName.class)
-class ProductControllerTests {
-
-    @Autowired
-    private MockMvc mvc;
-    @Autowired
-    private ProductService productService;
-    @Autowired
-    private MemberService memberService;
-
-    private Member testUserSeller1;
-    private Member testUserSeller2;
-    private Product product;
-    private MockMultipartFile emptyFile;
-
-    @BeforeEach
-    void beforeEachTest() {
-        emptyFile = new MockMultipartFile("imageFile", new byte[0]);
-
-        testUserSeller1 = memberService.join(new JoinRequest("testUserSeller1", "김철수", "1234", "testSeller1@test.com", "판매자")).getData();
-        testUserSeller2 = memberService.join(new JoinRequest("testUserSeller2", "김철수", "1234", "testSeller2@test.com", "판매자")).getData();
-        product = productService.create(new ProductRequest("테스트 상품1", "테스트 설명1",
-                12000L, 100L, asList(1L, 2L), asList(1L, 2L), emptyFile), testUserSeller1).getData();
-    }
+public class ProductControllerTests extends ControllerTest {
 
     @Test
-    @DisplayName("상품 등록 폼 처리")
-    @WithMockUser(username = "testUserSeller1", authorities = "SELLER")
+    @DisplayName("판매자는 상품 등록이 가능하다")
+    @WithMockUser(authorities = "SELLER")
     void createProductSuccessTest() throws Exception {
+        // GIVEN
+        Member testSeller = MemberFactory.member("testSeller", Role.SELLER);
+        MockMultipartFile emptyFile = new MockMultipartFile("imageFile", new byte[0]);
+
+        given(rq.getMember()).willReturn(testSeller);
+        given(productService.create(any(ProductRequest.class), any())).willReturn(RsData.successOf(new ProductResponse()));
+
         // WHEN
         ResultActions resultActions = mvc
                 .perform(multipart("/product/create")
@@ -74,21 +52,27 @@ class ProductControllerTests {
 
         // THEN
         resultActions
-                .andExpect(handler().handlerType(ProductController.class))
-                .andExpect(handler().methodName("create"))
-                .andExpect(status().is3xxRedirection());
+                .andExpect(status().is2xxSuccessful());
     }
 
     @Test
-    @DisplayName("상품 수정 폼 처리 - 성공")
-    @WithMockUser(username = "testUserSeller1", authorities = "SELLER")
+    @DisplayName("판매자는 상품 수정이 가능하다")
+    @WithMockUser(authorities = "SELLER")
     void updateProductSuccessTest() throws Exception {
+        // GIVEN
+        Member testSeller = MemberFactory.member("testSeller", Role.SELLER);
+        MockMultipartFile emptyFile = new MockMultipartFile("imageFile", new byte[0]);
+        Long productId = 1L;
+
+        given(rq.getMember()).willReturn(testSeller);
+        given(productService.update(any(Member.class), any(Long.class), any(ProductRequest.class))).willReturn(RsData.successOf(new ProductResponse()));
+
         // WHEN
         ResultActions resultActions = mvc
-                .perform(multipart("/product/update/%s".formatted(product.getId()))
+                .perform(multipart("/product/update/{productId}", productId)
                         .file(emptyFile)
                         .with(csrf())
-                        .param("sellerId", String.valueOf(testUserSeller1.getId()))
+                        .param("sellerId", String.valueOf(testSeller.getId()))
                         .param("name", "수정상품명")
                         .param("description", "수정설명")
                         .param("price", "1000")
@@ -100,70 +84,51 @@ class ProductControllerTests {
 
         // THEN
         resultActions
-                .andExpect(handler().handlerType(ProductController.class))
-                .andExpect(handler().methodName("update"))
-                .andExpect(status().is3xxRedirection());
+                .andExpect(status().is2xxSuccessful());
     }
 
     @Test
-    @DisplayName("상품 수정 폼 처리 - 권한없음 실패")
-    @WithMockUser(username = "testUserSeller2", authorities = "SELLER")
-    void updateProductFailTest() throws Exception {
-        // WHEN
-        ResultActions resultActions = mvc
-                .perform(post("/product/update/%s".formatted(product.getId()))
-                        .with(csrf())
-                        .param("sellerId", String.valueOf(testUserSeller2))
-                        .param("name", "수정상품명")
-                        .param("description", "수정설명")
-                        .param("price", "1000")
-                        .param("stock", "10")
-                        .param("nutrientIds", "1,2")
-                        .param("categoryIds", "1,2")
-                )
-                .andDo(print());
-
-        // THEN
-        resultActions
-                .andExpect(handler().handlerType(ProductController.class))
-                .andExpect(handler().methodName("update"))
-                .andExpect(status().is4xxClientError());
-    }
-
-
-    @Test
-    @DisplayName("상품 삭제 - 성공")
-    @WithMockUser(username = "testUserSeller1", authorities = "SELLER")
+    @DisplayName("판매자는 상품 삭제가 가능하다")
+    @WithMockUser(authorities = "SELLER")
     void deleteProductSuccessTest() throws Exception {
+        // GIVEN
+        Member testSeller = MemberFactory.member("testSeller", Role.SELLER);
+        Long productId = 1L;
+
+        given(rq.getMember()).willReturn(testSeller);
+        given(productService.softDelete(any(Member.class), any(Long.class))).willReturn(RsData.successOf(new ProductResponse()));
+
         // WHEN
         ResultActions resultActions = mvc
-                .perform(post("/product/delete/%s".formatted(product.getId()))
+                .perform(multipart("/product/delete/{productId}", productId)
                         .with(csrf())
                 )
                 .andDo(print());
 
         // THEN
         resultActions
-                .andExpect(handler().handlerType(ProductController.class))
-                .andExpect(handler().methodName("delete"))
-                .andExpect(status().is3xxRedirection());
+                .andExpect(status().is2xxSuccessful());
     }
 
     @Test
-    @DisplayName("상품 삭제 - 권한없음 실패")
-    @WithMockUser(username = "testUserSeller2", authorities = "SELLER")
-    void deleteProductFailTest() throws Exception {
+    @DisplayName("상품 상세 페이지를 조회할 수 있다")
+    @WithMockUser
+    void showProductSuccessTest() throws Exception {
+        // GIVEN
+        Long productId = 1L;
+        given(productService.get(any(Long.class))).willReturn(RsData.successOf(new ProductResponse()));
+
         // WHEN
         ResultActions resultActions = mvc
-                .perform(post("/product/delete/%s".formatted(product.getId()))
-                        .with(csrf())
+                .perform(get("/product/detail/{productId}", productId)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 )
                 .andDo(print());
 
         // THEN
         resultActions
-                .andExpect(handler().handlerType(ProductController.class))
-                .andExpect(handler().methodName("delete"))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is2xxSuccessful());
     }
+
+
 }

@@ -6,6 +6,7 @@ import com.mypill.domain.member.entity.Member;
 import com.mypill.domain.member.entity.Role;
 import com.mypill.domain.member.repository.MemberRepository;
 import com.mypill.domain.product.dto.request.ProductRequest;
+import com.mypill.domain.product.dto.response.ProductResponse;
 import com.mypill.domain.product.entity.Product;
 import com.mypill.domain.product.repository.ProductRepository;
 import com.mypill.global.rsdata.RsData;
@@ -54,11 +55,11 @@ class ProductServiceTests {
     @Order(1)
     void createSuccessTests() {
         // WHEN
-        Product testProduct = productService.create(ProductFactory.mockProductRequest("testProduct"), testSeller1).getData();
+        RsData<ProductResponse> rsData = productService.create(ProductFactory.mockProductRequest("testProduct"), testSeller1);
 
         // THEN
-        assertThat(testProduct).isNotNull();
-        assertThat(testProduct.getName()).isEqualTo("testProduct");
+        assertThat(rsData.getResultCode()).isEqualTo("S-1");
+        assertThat(rsData.getData().getName()).isEqualTo("testProduct");
     }
 
     @Test
@@ -69,12 +70,12 @@ class ProductServiceTests {
         Product testProduct = productRepository.save(ProductFactory.product("testProduct", testSeller1));
 
         // WHEN
-        RsData<Product> getRsData = productService.get(testProduct.getId());
+        RsData<ProductResponse> getRsData = productService.get(testProduct.getId());
 
         // THEN
         assertThat(getRsData.getResultCode()).isEqualTo("S-1");
         assertThat(getRsData.getData().getName()).isEqualTo("testProduct");
-        assertThat(getRsData.getData().getSeller().getId()).isEqualTo(testSeller1.getId());
+        assertThat(getRsData.getData().getSellerId()).isEqualTo(testSeller1.getId());
     }
 
     @Test
@@ -86,12 +87,11 @@ class ProductServiceTests {
         ProductRequest request = ProductFactory.mockProductRequest("newProduct");
 
         // WHEN
-        RsData<Product> updateRsData = productService.update(testSeller1, testProduct.getId(), request);
-        Product updateProduct = updateRsData.getData();
+        RsData<ProductResponse> updateRsData = productService.update(testSeller1, testProduct.getId(), request);
 
         // THEN
         assertThat(updateRsData.getResultCode()).isEqualTo("S-1");
-        assertThat(updateProduct.getName()).isEqualTo("newProduct");
+        assertThat(updateRsData.getData().getName()).isEqualTo("newProduct");
     }
 
     @Test
@@ -104,7 +104,7 @@ class ProductServiceTests {
         ProductRequest request = ProductFactory.mockProductRequest("newProduct");
 
         // WHEN
-        RsData<Product> updateRsData = productService.update(testSeller2, testProduct.getId(), request);
+        RsData<ProductResponse> updateRsData = productService.update(testSeller2, testProduct.getId(), request);
 
         // THEN
         assertThat(updateRsData.getResultCode()).isEqualTo("F-2");
@@ -118,13 +118,11 @@ class ProductServiceTests {
         Product testProduct = productRepository.save(ProductFactory.product("testProduct", testSeller1));
 
         // WHEN
-        RsData<Product> deleteRsData = productService.softDelete(testSeller1, testProduct.getId());
-        Product deletedProduct = deleteRsData.getData();
+        RsData<ProductResponse> deleteRsData = productService.softDelete(testSeller1, testProduct.getId());
 
         // THEN
         assertThat(deleteRsData.getResultCode()).isEqualTo("S-1");
-        assertThat(deletedProduct).isNotNull();
-        assertThat(deletedProduct.getDeleteDate()).isNotNull();
+        assertThat(deleteRsData.getData().getDeleteDate()).isNotNull();
     }
 
     @Test
@@ -136,7 +134,7 @@ class ProductServiceTests {
         Product testProduct = productRepository.save(ProductFactory.product("testProduct", testSeller1));
 
         //WHEN
-        RsData<Product> deleteRsData = productService.softDelete(testSeller2, testProduct.getId());
+        RsData<ProductResponse> deleteRsData = productService.softDelete(testSeller2, testProduct.getId());
         Product deletedProduct = productRepository.findById(testProduct.getId()).orElse(null);
 
         //THEN
