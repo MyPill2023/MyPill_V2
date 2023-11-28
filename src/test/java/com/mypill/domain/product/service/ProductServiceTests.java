@@ -75,7 +75,7 @@ class ProductServiceTests {
         // THEN
         assertThat(getRsData.getResultCode()).isEqualTo("S-1");
         assertThat(getRsData.getData().getName()).isEqualTo("testProduct");
-        assertThat(getRsData.getData().getSellerId()).isEqualTo(testSeller1.getId());
+        assertThat(getRsData.getData().getId()).isEqualTo(testProduct.getId());
     }
 
     @Test

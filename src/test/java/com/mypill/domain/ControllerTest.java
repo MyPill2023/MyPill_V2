@@ -46,6 +46,7 @@ import org.springframework.test.web.servlet.MockMvc;
         DiaryController.class,
         HomeController.class,
         MemberController.class,
+        OrderController.class,
         ProductController.class
 
 })
@@ -91,4 +92,7 @@ public abstract class ControllerTest {
 
     @MockBean
     protected Rq rq;
+
+    @MockBean
+    protected TossPaymentService tossPaymentService;
 }
