@@ -20,7 +20,7 @@ import java.time.LocalTime;
 @Getter
 @SuperBuilder(toBuilder = true)
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class Notification extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

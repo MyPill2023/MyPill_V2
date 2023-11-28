@@ -2,6 +2,7 @@ package com.mypill.domain.comment.service;
 
 import com.mypill.common.factory.MemberFactory;
 import com.mypill.common.factory.PostFactory;
+import com.mypill.domain.IntegrationTest;
 import com.mypill.domain.comment.dto.request.CommentRequest;
 import com.mypill.domain.comment.dto.response.CommentResponse;
 import com.mypill.domain.comment.entity.Comment;
@@ -11,21 +12,17 @@ import com.mypill.domain.member.repository.MemberRepository;
 import com.mypill.domain.post.entity.Post;
 import com.mypill.domain.post.repository.PostRepository;
 import com.mypill.global.rsdata.RsData;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@Transactional
-@ActiveProfiles("test")
-@TestMethodOrder(MethodOrderer.MethodName.class)
-class CommentServiceTest {
+class CommentServiceTests extends IntegrationTest {
     @Autowired
     private CommentService commentService;
     @Autowired

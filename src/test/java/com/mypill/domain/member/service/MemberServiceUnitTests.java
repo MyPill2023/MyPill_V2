@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @TestMethodOrder(MethodOrderer.MethodName.class)
-class MemberServiceUnitTest {
+class MemberServiceUnitTests {
     @InjectMocks
     private MemberService memberService;
     @Mock
@@ -59,7 +59,7 @@ class MemberServiceUnitTest {
     }
 
     @Test
-    @DisplayName("join")
+    @DisplayName("회원가입")
     void joinSuccessUnitTest() {
         // GIVEN
         PasswordEncoder encoder = new BCryptPasswordEncoder();

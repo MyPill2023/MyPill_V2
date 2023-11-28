@@ -26,28 +26,28 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
 
     @Transactional
-    public void whenAfterOrderStatusUpdate(Member member, OrderItem orderItem, OrderStatus newStatus) {
+    public Notification whenAfterOrderStatusUpdate(Member member, OrderItem orderItem, OrderStatus newStatus) {
         Notification notification = Notification.builder()
                 .typeCode(NotificationTypeCode.OrderStatus)
                 .member(member)
                 .orderItem(orderItem)
                 .newStatus(newStatus)
                 .build();
-        notificationRepository.save(notification);
+        return notificationRepository.save(notification);
     }
 
     @Transactional
-    public void whenAfterOrderPayment(Member seller, Order order) {
+    public Notification whenAfterOrderPayment(Member seller, Order order) {
         Notification notification = Notification.builder()
                 .typeCode(NotificationTypeCode.OrderPayment)
                 .member(seller)
                 .order(order)
                 .build();
-        notificationRepository.save(notification);
+        return notificationRepository.save(notification);
     }
 
     @Transactional
-    public void whenAfterOrderChanged(Member seller, Order order, OrderStatus orderStatus) {
+    public Notification whenAfterOrderChanged(Member seller, Order order, OrderStatus orderStatus) {
         NotificationTypeCode notificationTypeCode = NotificationTypeCode.OrderPayment;
         if (orderStatus.equals(OrderStatus.CANCELED)) {
             notificationTypeCode = NotificationTypeCode.OrderCanceled;
@@ -57,28 +57,28 @@ public class NotificationService {
                 .member(seller)
                 .order(order)
                 .build();
-        notificationRepository.save(notification);
+        return notificationRepository.save(notification);
     }
 
     @Transactional
-    public void whenAfterOrderCanceled(Member seller, Order order) {
+    public Notification whenAfterOrderCanceled(Member seller, Order order) {
         Notification notification = Notification.builder()
                 .typeCode(NotificationTypeCode.OrderCanceled)
                 .member(seller)
                 .order(order)
                 .build();
-        notificationRepository.save(notification);
+        return notificationRepository.save(notification);
     }
 
     @Transactional
-    public void whenBeforeDiaryCheck(Diary diary) {
+    public Notification whenBeforeDiaryCheck(Diary diary) {
         Notification notification = Notification.builder()
                 .typeCode(NotificationTypeCode.Record)
                 .member(diary.getMember())
                 .diaryName(diary.getName())
                 .diaryTime(diary.getTime())
                 .build();
-        notificationRepository.save(notification);
+        return notificationRepository.save(notification);
     }
 
     @Transactional
