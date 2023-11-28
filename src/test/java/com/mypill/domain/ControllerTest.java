@@ -47,6 +47,7 @@ import org.springframework.test.web.servlet.MockMvc;
         HomeController.class,
         MemberController.class,
         OrderController.class,
+        PostController.class,
         ProductController.class
 
 })
