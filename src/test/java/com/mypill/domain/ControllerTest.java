@@ -24,6 +24,7 @@ import com.mypill.domain.product.controller.ProductController;
 import com.mypill.domain.product.service.ProductService;
 import com.mypill.domain.productlike.service.ProductLikeService;
 import com.mypill.domain.seller.controller.SellerController;
+import com.mypill.domain.seller.service.SellerService;
 import com.mypill.global.AppConfig;
 import com.mypill.global.rq.Rq;
 import com.mypill.global.security.SecurityConfig;
@@ -48,8 +49,8 @@ import org.springframework.test.web.servlet.MockMvc;
         MemberController.class,
         OrderController.class,
         PostController.class,
-        ProductController.class
-
+        ProductController.class,
+        SellerController.class
 })
 public abstract class ControllerTest {
     @Autowired
@@ -93,6 +94,9 @@ public abstract class ControllerTest {
 
     @MockBean
     protected Rq rq;
+
+    @MockBean
+    protected SellerService sellerService;
 
     @MockBean
     protected TossPaymentService tossPaymentService;
