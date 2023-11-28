@@ -36,7 +36,7 @@ public class ProductLikeService {
         ProductLike newProductLike = new ProductLike(memberId, productId);
         productLikeRepository.save(newProductLike);
         publisher.publishEvent(new EventAfterLike(this, product));
-        return RsData.of("S-1", "상품 좋아요가 등록되었습니다.");
+        return RsData.of("S-1", "상품 좋아요가 등록되었습니다.", newProductLike);
     }
 
     @Transactional
@@ -48,7 +48,7 @@ public class ProductLikeService {
 
         ProductLike productLike = findByMemberIdAndProductId(memberId, productId);
         if (productLike == null) {
-            return RsData.of("F-1", "이미 좋아요 취소한 상품입니다.");
+            return RsData.of("F-2", "이미 좋아요 취소한 상품입니다.");
         }
         productLikeRepository.delete(productLike);
         publisher.publishEvent(new EventAfterUnlike(this, product));

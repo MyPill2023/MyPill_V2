@@ -22,6 +22,7 @@ import com.mypill.domain.post.controller.PostController;
 import com.mypill.domain.post.service.PostService;
 import com.mypill.domain.product.controller.ProductController;
 import com.mypill.domain.product.service.ProductService;
+import com.mypill.domain.productlike.controller.ProductLikeController;
 import com.mypill.domain.productlike.service.ProductLikeService;
 import com.mypill.domain.seller.controller.SellerController;
 import com.mypill.domain.seller.service.SellerService;
@@ -50,6 +51,7 @@ import org.springframework.test.web.servlet.MockMvc;
         OrderController.class,
         PostController.class,
         ProductController.class,
+        ProductLikeController.class,
         SellerController.class
 })
 public abstract class ControllerTest {
