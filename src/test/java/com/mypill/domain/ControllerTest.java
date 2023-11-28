@@ -26,8 +26,11 @@ import com.mypill.domain.product.controller.ProductController;
 import com.mypill.domain.product.service.ProductService;
 import com.mypill.domain.productlike.controller.ProductLikeController;
 import com.mypill.domain.productlike.service.ProductLikeService;
+import com.mypill.domain.question.service.QuestionService;
 import com.mypill.domain.seller.controller.SellerController;
 import com.mypill.domain.seller.service.SellerService;
+import com.mypill.domain.survey.controller.SurveyController;
+import com.mypill.domain.survey.service.SurveyService;
 import com.mypill.global.AppConfig;
 import com.mypill.global.rq.Rq;
 import com.mypill.global.security.SecurityConfig;
@@ -55,6 +58,7 @@ import org.springframework.test.web.servlet.MockMvc;
         PostController.class,
         ProductController.class,
         ProductLikeController.class,
+        SurveyController.class,
         SellerController.class
 })
 public abstract class ControllerTest {
@@ -104,7 +108,13 @@ public abstract class ControllerTest {
     protected Rq rq;
 
     @MockBean
+    protected SurveyService surveyService;
+
+    @MockBean
     protected SellerService sellerService;
+
+    @MockBean
+    protected QuestionService questionService;
 
     @MockBean
     protected TossPaymentService tossPaymentService;
