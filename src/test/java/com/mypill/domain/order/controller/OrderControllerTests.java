@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class OrderControllerTests extends ControllerTest {
 
     @Test
-    @DisplayName("구매자는 주문 폼에 접근할 수 있다")
+    @DisplayName("구매자 회원은 주문 폼에 접근할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void showOrderFormSuccessTest() throws Exception {
         // GIVEN
@@ -54,7 +54,7 @@ public class OrderControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 장바구니에서 전체 상품을 주문할 수 있다")
+    @DisplayName("구매자 회원은 장바구니에서 전체 상품을 주문할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void createFromCartSuccessTest() throws Exception {
         // GIVEN
@@ -77,7 +77,7 @@ public class OrderControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 장바구니에서 선택한 상품을 주문할 수 있다")
+    @DisplayName("구매자 회원은 장바구니에서 선택한 상품을 주문할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void createFromSelectedSuccessTest() throws Exception {
         // GIVEN
@@ -103,7 +103,7 @@ public class OrderControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 개별 상품을 바로 주문할 수 있다")
+    @DisplayName("구매자 회원은 개별 상품을 바로 주문할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void createFromSingleProductSuccessTest() throws Exception {
         // GIVEN
@@ -129,7 +129,7 @@ public class OrderControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 주문 내역을 조회할 수 있다")
+    @DisplayName("구매자 회원은 주문 내역을 조회할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void showOrderDetailSuccessTest() throws Exception {
         // GIVEN
@@ -191,7 +191,7 @@ public class OrderControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 주문을 취소할 수 있다")
+    @DisplayName("구매자 회원은 주문을 취소할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void cancelSuccessTest() throws Exception {
         // GIVEN
@@ -219,7 +219,7 @@ public class OrderControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("판매자는 주문 관리 페이지에 접근할 수 있다")
+    @DisplayName("판매자 회원은 주문 관리 페이지에 접근할 수 있다")
     @WithMockUser(authorities = "SELLER")
     void showManagementSuccessTest() throws Exception {
         // GIVEN
@@ -244,7 +244,7 @@ public class OrderControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("판매자는 주문 상태를 업데이트 할 수 있다")
+    @DisplayName("판매자 회원은 주문 상태를 업데이트 할 수 있다")
     @WithMockUser(authorities = "SELLER")
     void updateOrderStatusSuccessTest() throws Exception {
         // GIVEN

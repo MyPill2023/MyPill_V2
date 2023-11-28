@@ -22,7 +22,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class CommentServiceTest extends IntegrationTest {
+class CommentServiceTests extends IntegrationTest {
     @Autowired
     private CommentService commentService;
     @Autowired

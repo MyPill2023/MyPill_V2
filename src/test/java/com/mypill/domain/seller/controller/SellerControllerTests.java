@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class SellerControllerTests extends ControllerTest {
 
     @Test
-    @DisplayName("판매자는 주문 관리 페이지에 접근할 수 있다")
+    @DisplayName("판매자 회원은 주문 관리 페이지에 접근할 수 있다")
     @WithMockUser(authorities = "SELLER")
     void showMyOrderSuccessTest() throws Exception {
         // GIVEN
@@ -126,7 +126,7 @@ public class SellerControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("판매자는 상품 관리 페이지에 접근할 수 있다")
+    @DisplayName("판매자 회원은 상품 관리 페이지에 접근할 수 있다")
     @WithMockUser(authorities = "SELLER")
     void showMyProductSuccessTest() throws Exception {
         // GIVEN
@@ -153,7 +153,7 @@ public class SellerControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("판매자는 통계 페이지에 접근할 수 있다")
+    @DisplayName("판매자 회원은 통계 페이지에 접근할 수 있다")
     @WithMockUser(authorities = "SELLER")
     void showChartSuccessTest() throws Exception {
         // GIVEN

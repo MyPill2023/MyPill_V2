@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CartControllerTests extends ControllerTest {
 
     @Test
-    @DisplayName("구매자는 장바구니를 조회할 수 있다")
+    @DisplayName("구매자 회원은 장바구니를 조회할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void showCartProductSuccessTest() throws Exception {
         // GIVEN
@@ -45,7 +45,7 @@ public class CartControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 장바구니에 상품을 추가할 수 있다")
+    @DisplayName("구매자 회원은 장바구니에 상품을 추가할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void addCartProductSuccessTest() throws Exception {
         // GIVEN
@@ -69,7 +69,7 @@ public class CartControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 장바구니에 담긴 상품의 수량을 업데이트할 수 있다")
+    @DisplayName("구매자 회원은 장바구니에 담긴 상품의 수량을 업데이트할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void updateQuantitySuccessTest() throws Exception {
         // GIVEN
@@ -94,7 +94,7 @@ public class CartControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 장바구니에 담긴 상품을 삭제할 수 있다")
+    @DisplayName("구매자 회원은 장바구니에 담긴 상품을 삭제할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void deleteCartProductSuccessTest() throws Exception {
         // GIVEN
@@ -118,7 +118,7 @@ public class CartControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 장바구니에 담긴 상품을 전체 삭제할 수 있다")
+    @DisplayName("구매자 회원은 장바구니에 담긴 상품을 전체 삭제할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void deleteAllCartProductSuccessTest() throws Exception {
         // GIVEN

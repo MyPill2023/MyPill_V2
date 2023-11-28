@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ProductLikeControllerTests extends ControllerTest {
 
     @Test
-    @DisplayName("구매자는 상품에 대한 좋아요를 등록할 수 있다")
+    @DisplayName("구매자 회원은 상품에 대한 좋아요를 등록할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void likeProductSuccessTest() throws Exception {
         // GIVEN
@@ -45,7 +45,7 @@ public class ProductLikeControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 상품에 대한 좋아요를 취소할 수 있다")
+    @DisplayName("구매자 회원은 상품에 대한 좋아요를 취소할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void unlikeProductSuccessTest() throws Exception {
         // GIVEN
@@ -68,7 +68,7 @@ public class ProductLikeControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 관심 상품 목록에서 좋아요를 삭제할 수 있다")
+    @DisplayName("구매자 회원은 관심 상품 목록에서 좋아요를 삭제할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void unlikeFromMyLikesSuccessTest() throws Exception {
         // GIVEN

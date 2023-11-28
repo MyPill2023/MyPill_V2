@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SellerServiceTest extends IntegrationTest {
+class SellerServiceTests extends IntegrationTest {
     @Autowired
     private SellerService sellerService;
     @Autowired

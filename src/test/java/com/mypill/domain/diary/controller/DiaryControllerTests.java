@@ -39,7 +39,7 @@ public class DiaryControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 복용 스케줄 등록 페이지에 접근할 수 있다")
+    @DisplayName("구매자 회원은 복용 스케줄 등록 페이지에 접근할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void showCreateFormSuccessTest() throws Exception {
         // WHEN
@@ -53,7 +53,7 @@ public class DiaryControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 복용 스케줄을 등록할 수 있다")
+    @DisplayName("구매자 회원은 복용 스케줄을 등록할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void createSuccessTest() throws Exception {
         // GIVEN
@@ -75,7 +75,7 @@ public class DiaryControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 복용 스케줄 목록을 조회할 수 있다")
+    @DisplayName("구매자 회원은 복용 스케줄 목록을 조회할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void showListSuccessTest() throws Exception {
         // GIVEN
@@ -92,7 +92,7 @@ public class DiaryControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 복용 스케줄을 삭제할 수 있다")
+    @DisplayName("구매자 회원은 복용 스케줄을 삭제할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void deleteSuccessTest() throws Exception {
         // GIVEN
@@ -113,7 +113,7 @@ public class DiaryControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 복용 스케줄 기록 페이지에 접근할 수 있다")
+    @DisplayName("구매자 회원은 복용 스케줄 기록 페이지에 접근할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void showCheckLogTest() throws Exception {
         // GIVEN
@@ -132,7 +132,7 @@ public class DiaryControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 복용 기록 체크를 등록할 수 있다")
+    @DisplayName("구매자 회원은 복용 기록 체크를 등록할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void toggleCheckSuccessTest() throws Exception {
         // GIVEN

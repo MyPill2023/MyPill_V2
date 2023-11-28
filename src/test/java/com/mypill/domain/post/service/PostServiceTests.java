@@ -22,7 +22,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class PostServiceTest extends IntegrationTest {
+class PostServiceTests extends IntegrationTest {
     @Autowired
     private PostService postService;
     @Autowired

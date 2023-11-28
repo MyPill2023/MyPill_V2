@@ -27,10 +27,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class BuyerControllerTest extends ControllerTest {
+class BuyerControllerTests extends ControllerTest {
 
     @Test
-    @DisplayName("구매자는 좋아요 표시한 상품의 목록을 조회할 수 있다")
+    @DisplayName("구매자 회원은 좋아요 표시한 상품의 목록을 조회할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void showMyLikesSuccessTest() throws Exception {
         // GIVEN
@@ -54,7 +54,7 @@ class BuyerControllerTest extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 자신의 복약관리 페이지에 접근할 수 있다")
+    @DisplayName("구매자 회원은 자신의 복약관리 페이지에 접근할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void showMyScheduleSuccessTest() throws Exception {
         // WHEN
@@ -70,7 +70,7 @@ class BuyerControllerTest extends ControllerTest {
 
 
     @Test
-    @DisplayName("구매자는 자신의 주문 목록을 조회할 수 있다")
+    @DisplayName("구매자 회원은 자신의 주문 목록을 조회할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void showMyOrderSuccessTest() throws Exception {
         // GIVEN
@@ -96,7 +96,7 @@ class BuyerControllerTest extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 자신의 배송지 목록을 조회할 수 있다")
+    @DisplayName("구매자 회원은 자신의 배송지 목록을 조회할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void showMyAddressSuccessTest() throws Exception {
         // GIVEN
@@ -118,7 +118,7 @@ class BuyerControllerTest extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 자신의 설문 결과를 조회할 수 있다")
+    @DisplayName("구매자 회원은 자신의 설문 결과를 조회할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void showMySurveySuccessTest() throws Exception {
         // GIVEN

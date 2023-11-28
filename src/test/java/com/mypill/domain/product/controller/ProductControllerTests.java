@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ProductControllerTests extends ControllerTest {
 
     @Test
-    @DisplayName("판매자는 상품 등록 페이지에 접근할 수 있다")
+    @DisplayName("판매자 회원은 상품 등록 페이지에 접근할 수 있다")
     @WithMockUser(authorities = "SELLER")
     void showCreateFormSuccessTest() throws Exception {
         // GIVEN
@@ -54,7 +54,7 @@ public class ProductControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("판매자는 상품을 등록할 수 있다")
+    @DisplayName("판매자 회원은 상품을 등록할 수 있다")
     @WithMockUser(authorities = "SELLER")
     void createProductSuccessTest() throws Exception {
         // GIVEN
@@ -198,7 +198,7 @@ public class ProductControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("판매자는 상품 수정 페이지에 접근할 수 있다")
+    @DisplayName("판매자 회원은 상품 수정 페이지에 접근할 수 있다")
     @WithMockUser(authorities = "SELLER")
     void showUpdateFormSuccessTest() throws Exception {
         // GIVEN
@@ -219,7 +219,7 @@ public class ProductControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("판매자는 자신의 상품을 수정할 수 있다")
+    @DisplayName("판매자 회원은 자신의 상품을 수정할 수 있다")
     @WithMockUser(authorities = "SELLER")
     void updateProductSuccessTest() throws Exception {
         // GIVEN
@@ -252,7 +252,7 @@ public class ProductControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("판매자는 자신의 상품을 삭제할 수 있다")
+    @DisplayName("판매자 회원은 자신의 상품을 삭제할 수 있다")
     @WithMockUser(authorities = "SELLER")
     void deleteProductSuccessTest() throws Exception {
         // GIVEN

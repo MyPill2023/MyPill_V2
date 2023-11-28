@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class AddressControllerTests extends ControllerTest {
 
     @Test
-    @DisplayName("구매자는 배송지를 등록 페이지에 접근할 수 있다")
+    @DisplayName("구매자 회원은 배송지를 등록 페이지에 접근할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void showCreateFormTestSuccess() throws Exception {
         // GIVEN
@@ -45,7 +45,7 @@ public class AddressControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 배송지를 추가할 수 있다")
+    @DisplayName("구매자 회원은 배송지를 추가할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void createSuccessTest() throws Exception {
         // GIVEN
@@ -78,7 +78,7 @@ public class AddressControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 배송지 수정 페이지에 접근할 수 있다")
+    @DisplayName("구매자 회원은 배송지 수정 페이지에 접근할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void updateFormTestSuccess() throws Exception {
         // GIVEN
@@ -100,7 +100,7 @@ public class AddressControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 배송지를 수정할 수 있다")
+    @DisplayName("구매자 회원은 배송지를 수정할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void updateSuccessTest() throws Exception {
         // GIVEN
@@ -134,7 +134,7 @@ public class AddressControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 배송지를 삭제할 수 있다")
+    @DisplayName("구매자 회원은 배송지를 삭제할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void softDeleteSuccessTest() throws Exception {
         // GIVEN
@@ -158,7 +158,7 @@ public class AddressControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 배송지 상세정보를 조회할 수 있다")
+    @DisplayName("구매자 회원은 배송지 상세정보를 조회할 수 있다")
     @WithMockUser(authorities = "BUYER")
     void getAddressDetailsSuccessTest() throws Exception {
         // GIVEN
@@ -181,7 +181,7 @@ public class AddressControllerTests extends ControllerTest {
     }
 
     @Test
-    @DisplayName("구매자는 존재하지 않는 배송지의 상세정보를 조회할 수 없다")
+    @DisplayName("구매자 회원은 존재하지 않는 배송지의 상세정보를 조회할 수 없다")
     @WithMockUser(authorities = "BUYER")
     void getAddressDetailsFailTest() throws Exception {
         // GIVEN
