@@ -2,6 +2,7 @@ package com.mypill.domain.productlike.service;
 
 import com.mypill.common.factory.MemberFactory;
 import com.mypill.common.factory.ProductFactory;
+import com.mypill.domain.IntegrationTest;
 import com.mypill.domain.member.entity.Member;
 import com.mypill.domain.member.entity.Role;
 import com.mypill.domain.member.repository.MemberRepository;
@@ -11,21 +12,12 @@ import com.mypill.domain.productlike.entity.ProductLike;
 import com.mypill.domain.productlike.repository.ProductLikeRepository;
 import com.mypill.global.rsdata.RsData;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@Transactional
-@TestMethodOrder(MethodOrderer.DisplayName.class)
-public class ProductLikeServiceTests {
+public class ProductLikeServiceTests extends IntegrationTest {
 
     @Autowired
     private ProductLikeService productLikeService;

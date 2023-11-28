@@ -1,6 +1,7 @@
 package com.mypill.domain.order.service;
 
 import com.mypill.common.factory.*;
+import com.mypill.domain.IntegrationTest;
 import com.mypill.domain.address.entity.Address;
 import com.mypill.domain.address.repository.AddressRepository;
 import com.mypill.domain.cart.entity.Cart;
@@ -19,24 +20,17 @@ import com.mypill.domain.order.repository.OrderRepository;
 import com.mypill.domain.product.entity.Product;
 import com.mypill.domain.product.repository.ProductRepository;
 import com.mypill.global.rsdata.RsData;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@Transactional
-@ActiveProfiles("test")
-@TestMethodOrder(MethodOrderer.DisplayName.class)
-class OrderServiceTests {
+class OrderServiceTests extends IntegrationTest {
     @Autowired
     private OrderService orderService;
     @Autowired
