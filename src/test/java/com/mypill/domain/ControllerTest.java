@@ -14,6 +14,8 @@ import com.mypill.domain.diary.service.DiaryService;
 import com.mypill.domain.home.controller.HomeController;
 import com.mypill.domain.member.controller.MemberController;
 import com.mypill.domain.member.service.MemberService;
+import com.mypill.domain.notification.controller.NotificationController;
+import com.mypill.domain.notification.service.NotificationService;
 import com.mypill.domain.nutrient.service.NutrientService;
 import com.mypill.domain.order.controller.OrderController;
 import com.mypill.domain.order.service.OrderService;
@@ -48,6 +50,7 @@ import org.springframework.test.web.servlet.MockMvc;
         DiaryController.class,
         HomeController.class,
         MemberController.class,
+        NotificationController.class,
         OrderController.class,
         PostController.class,
         ProductController.class,
@@ -81,6 +84,9 @@ public abstract class ControllerTest {
 
     @MockBean
     protected MemberService memberService;
+
+    @MockBean
+    protected NotificationService notificationService;
 
     @MockBean
     protected OrderService orderService;

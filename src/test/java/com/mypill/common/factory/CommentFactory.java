@@ -7,7 +7,7 @@ import com.mypill.domain.post.entity.Post;
 
 public class CommentFactory {
 
-    public CommentFactory(){}
+    private CommentFactory(){}
 
     public static CommentResponse commentResponse(Member member){
         Post post = PostFactory.post(1L, member.getId(), "title");
