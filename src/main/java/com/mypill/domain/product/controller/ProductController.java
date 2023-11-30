@@ -82,10 +82,10 @@ public class ProductController {
 
     @GetMapping("/list/nutrient/{nutrientId}")
     @Operation(summary = "영양 성분별 상품 목록 페이지")
-    public String listByNutrient(@PathVariable Long nutrientId,
-                                 @RequestParam(defaultValue = "0") int pageNumber,
-                                 @RequestParam(defaultValue = "10") int pageSize,
-                                 Model model, HttpServletRequest request) {
+    public String showListByNutrient(@PathVariable Long nutrientId,
+                                     @RequestParam(defaultValue = "0") int pageNumber,
+                                     @RequestParam(defaultValue = "10") int pageSize,
+                                     Model model, HttpServletRequest request) {
         Page<Product> productPage = productService.getAllProductListByNutrientId(nutrientId, PageRequest.of(pageNumber, pageSize));
         Nutrient nutrient = nutrientService.findById(nutrientId).orElse(null);
         if (nutrient == null) {
@@ -97,10 +97,10 @@ public class ProductController {
 
     @GetMapping("/list/category/{categoryId}")
     @Operation(summary = "주요 기능별 상품 목록 페이지")
-    public String listByCategory(@PathVariable Long categoryId,
-                                 @RequestParam(defaultValue = "0") int pageNumber,
-                                 @RequestParam(defaultValue = "10") int pageSize,
-                                 Model model, HttpServletRequest request) {
+    public String showListByCategory(@PathVariable Long categoryId,
+                                     @RequestParam(defaultValue = "0") int pageNumber,
+                                     @RequestParam(defaultValue = "10") int pageSize,
+                                     Model model, HttpServletRequest request) {
         Page<Product> productPage = productService.getAllProductListByCategoryId(categoryId, PageRequest.of(pageNumber, pageSize));
         Category category = categoryService.findById(categoryId).orElse(null);
         if (category == null) {

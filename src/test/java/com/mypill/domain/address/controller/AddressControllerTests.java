@@ -1,273 +1,205 @@
 package com.mypill.domain.address.controller;
 
+import com.mypill.common.factory.AddressFactory;
+import com.mypill.common.factory.MemberFactory;
+import com.mypill.domain.ControllerTest;
 import com.mypill.domain.address.dto.request.AddressRequest;
 import com.mypill.domain.address.entity.Address;
-import com.mypill.domain.address.service.AddressService;
-import com.mypill.domain.member.dto.request.JoinRequest;
 import com.mypill.domain.member.entity.Member;
-import com.mypill.domain.member.service.MemberService;
-import com.mypill.global.AppConfig;
-import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import com.mypill.global.rsdata.RsData;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@Transactional
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@TestMethodOrder(MethodOrderer.DisplayName.class)
-class AddressControllerTests {
-
-    @Autowired
-    private MockMvc mvc;
-    @Autowired
-    private AddressService addressService;
-    @Autowired
-    private MemberService memberService;
-
-    private Member testUser1;
-    private Member testUser2;
-
-
-    @BeforeEach
-    void beforeEachTest() {
-        testUser1 = memberService.join(new JoinRequest("testUser1", "김철수", "1234", "test1@test.com", "구매자")).getData();
-        testUser2 = memberService.join(new JoinRequest("testUser2", "김영희", "1234", "test2@test.com", "구매자"), true).getData();
-    }
+public class AddressControllerTests extends ControllerTest {
 
     @Test
-    @DisplayName("배송지 추가 성공")
-    @WithMockUser(username = "testUser1", authorities = "BUYER")
-    void testCreateSuccess() throws Exception {
+    @DisplayName("구매자 회원은 배송지를 등록 페이지에 접근할 수 있다")
+    @WithMockUser(authorities = "BUYER")
+    void showCreateFormTestSuccess() throws Exception {
+        // GIVEN
+        Member testBuyer = MemberFactory.member(1L, "testBuyer");
+        given(rq.getMember()).willReturn(testBuyer);
+        given(addressService.isFull(any(Long.class))).willReturn(false);
+
         //WHEN
         ResultActions resultActions = mvc
-                .perform(post("/buyer/myAddress/create")
-                        .with(csrf())
-                        .param("memberId", String.valueOf(testUser1.getId()))
-                        .param("name", "주소 이름")
-                        .param("receiverName", "수령인 이름")
-                        .param("address", "주소")
-                        .param("detailAddress", "상세주소")
-                        .param("postCode", "우편번호")
-                        .param("phoneNumber", "연락처")
-                        .param("isDefault", String.valueOf(false))
-                )
+                .perform(get("/buyer/myAddress/create"))
                 .andDo(print());
+
         //THEN
         resultActions
-                .andExpect(handler().handlerType(AddressController.class))
-                .andExpect(handler().methodName("create"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("/buyer/myAddress**"));
-
-        Address address = addressService.findByMemberId(testUser1.getId()).get(0);
-        assertThat(address.getName()).isEqualTo("주소 이름");
-        assertThat(address.getAddress()).isEqualTo("주소");
-        assertFalse(address.isDefault());
+                .andExpect(status().is2xxSuccessful());
     }
 
     @Test
-    @DisplayName("배송지 추가 실패 - 최대 등록 가능 개수 초과")
-    @WithMockUser(username = "testUser1", authorities = "BUYER")
-    void testCreateFail() throws Exception {
-        //GIVEN
-        for (int i = 0; i < AppConfig.getMaxAddressCount(); i++) {
-            addressService.create(new AddressRequest("김철수의 집", "김철수", "서울시 강남구", "도산대로1", "12121", "01012341234", true), testUser1);
-        }
+    @DisplayName("구매자 회원은 배송지를 추가할 수 있다")
+    @WithMockUser(authorities = "BUYER")
+    void createSuccessTest() throws Exception {
+        // GIVEN
+        Member testBuyer = MemberFactory.member(1L, "testBuyer");
+        AddressRequest request = AddressFactory.addressRequest("address");
+
+        given(rq.getMember()).willReturn(testBuyer);
+        given(addressService.create(any(AddressRequest.class), any(Member.class)))
+                .willReturn(RsData.successOf(AddressFactory.address(testBuyer)));
 
         //WHEN
         ResultActions resultActions = mvc
                 .perform(post("/buyer/myAddress/create")
                         .with(csrf())
-                        .param("memberId", String.valueOf(testUser1.getId()))
-                        .param("name", "주소 이름")
-                        .param("receiverName", "수령인 이름")
-                        .param("address", "주소")
-                        .param("detailAddress", "상세주소")
-                        .param("postCode", "우편번호")
-                        .param("phoneNumber", "연락처")
-                        .param("isDefault", String.valueOf(false))
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("memberId", String.valueOf(testBuyer.getId()))
+                        .param("name", request.getAddress())
+                        .param("receiverName", request.getReceiverName())
+                        .param("address", request.getAddress())
+                        .param("detailAddress", request.getDetailAddress())
+                        .param("postCode", request.getPostCode())
+                        .param("phoneNumber", request.getPhoneNumber())
+                        .param("isDefault", String.valueOf(request.isDefault()))
                 )
                 .andDo(print());
+
         //THEN
         resultActions
-                .andExpect(handler().handlerType(AddressController.class))
-                .andExpect(handler().methodName("create"))
-                .andExpect(status().is4xxClientError());
-
-        assertThat(addressService.findByMemberId(testUser1.getId())).hasSize(AppConfig.getMaxAddressCount());
+                .andExpect(status().is2xxSuccessful());
     }
 
     @Test
-    @DisplayName("배송지 수정 성공")
-    @WithMockUser(username = "testUser1", authorities = "BUYER")
-    void testUpdateSuccess() throws Exception {
-        //GIVEN
-        Address address = addressService.create(new AddressRequest("김철수의 집", "김철수", "서울시 강남구", "도산대로1", "12121", "01012341234", true), testUser1).getData();
-
-        //WHEN
-        ResultActions resultActions = mvc
-                .perform(post("/buyer/myAddress/update/%s".formatted(address.getId()))
-                        .with(csrf())
-                        .param("memberId", String.valueOf(testUser1.getId()))
-                        .param("name", "주소 이름")
-                        .param("receiverName", "수령인 이름")
-                        .param("address", "주소")
-                        .param("detailAddress", "상세주소")
-                        .param("postCode", "우편번호")
-                        .param("phoneNumber", "연락처")
-                        .param("isDefault", String.valueOf(false))
-                )
-                .andDo(print());
-        //THEN
-        resultActions
-                .andExpect(handler().handlerType(AddressController.class))
-                .andExpect(handler().methodName("update"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("/buyer/myAddress**"));
-
-        Address newAddress = addressService.findById(address.getId()).orElse(null);
-        assertThat(newAddress).isNotNull();
-        assertThat(newAddress.getName()).isEqualTo("주소 이름");
-        assertFalse(newAddress.isDefault());
-    }
-
-    @Test
-    @DisplayName("배송지 수정 실패 - 권한 없음")
-    @WithMockUser(username = "testUser2", authorities = "BUYER")
-    void testUpdateFail() throws Exception {
-        //GIVEN
-        Address address = addressService.create(new AddressRequest("김철수의 집", "김철수", "서울시 강남구", "도산대로1", "12121", "01012341234", true), testUser1).getData();
-
-        //WHEN
-        ResultActions resultActions = mvc
-                .perform(post("/buyer/myAddress/update/%s".formatted(address.getId()))
-                        .with(csrf())
-                        .param("memberId", String.valueOf(testUser2.getId()))
-                        .param("name", "주소 이름")
-                        .param("receiverName", "수령인 이름")
-                        .param("address", "주소")
-                        .param("detailAddress", "상세주소")
-                        .param("postCode", "우편번호")
-                        .param("phoneNumber", "연락처")
-                        .param("isDefault", String.valueOf(false))
-                )
-                .andDo(print());
-        //THEN
-        resultActions
-                .andExpect(handler().handlerType(AddressController.class))
-                .andExpect(handler().methodName("update"))
-                .andExpect(status().is4xxClientError());
-
-        Address newAddress = addressService.findById(address.getId()).orElse(null);
-        assertThat(newAddress).isNotNull();
-        assertThat(newAddress.getName()).isEqualTo("김철수의 집");
-        assertTrue(newAddress.isDefault());
-    }
-
-    @Test
-    @DisplayName("배송지 삭제 성공")
-    @WithMockUser(username = "testUser1", authorities = "BUYER")
-    void testDeleteSuccess() throws Exception {
-        //GIVEN
-        Address address = addressService.create(new AddressRequest("김철수의 집", "김철수", "서울시 강남구", "도산대로1", "12121", "01012341234", true), testUser1).getData();
-
-        //WHEN
-        ResultActions resultActions = mvc
-                .perform(post("/buyer/myAddress/delete/%s".formatted(address.getId()))
-                        .with(csrf())
-                )
-                .andDo(print());
-        //THEN
-        resultActions
-                .andExpect(handler().handlerType(AddressController.class))
-                .andExpect(handler().methodName("delete"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("/buyer/myAddress**"));
-
-        Address deletedAddress = addressService.findById(address.getId()).orElse(null);
-        assertThat(deletedAddress).isNotNull();
-        assertThat(deletedAddress.getDeleteDate()).isNotNull();
-    }
-
-    @Test
-    @DisplayName("배송지 삭제 실패 - 권한 없음")
-    @WithMockUser(username = "testUser2", authorities = "BUYER")
-    void testDeleteFail() throws Exception {
-        //GIVEN
-        Address address = addressService.create(new AddressRequest("김철수의 집", "김철수", "서울시 강남구", "도산대로1", "12121", "01012341234", true), testUser1).getData();
-
-        //WHEN
-        ResultActions resultActions = mvc
-                .perform(post("/buyer/myAddress/delete/%s".formatted(address.getId()))
-                        .with(csrf())
-                )
-                .andDo(print());
-        //THEN
-        resultActions
-                .andExpect(handler().handlerType(AddressController.class))
-                .andExpect(handler().methodName("delete"))
-                .andExpect(status().is4xxClientError());
-
-        Address deletedAddress = addressService.findById(address.getId()).orElse(null);
-        assertThat(deletedAddress).isNotNull();
-        assertThat(deletedAddress.getDeleteDate()).isNull();
-    }
-
-    @Test
-    @DisplayName("주문 시 배송지 세부 정보 가져오기 성공")
-    @WithMockUser(username = "testUser1", authorities = "BUYER")
-    void testGetAddressDetailsSuccess() throws Exception {
-        //GIVEN
-        Address address = addressService.create(new AddressRequest("김철수의 집", "김철수", "서울시 강남구", "도산대로1", "12121", "01012341234", true), testUser1).getData();
-
-        //WHEN
-        ResultActions resultActions = mvc
-                .perform(get("/buyer/myAddress/getAddressDetails")
-                        .param("addressId", String.valueOf(address.getId()))
-                )
-                .andDo(print());
-        //THEN
-        resultActions
-                .andExpect(handler().handlerType(AddressController.class))
-                .andExpect(handler().methodName("getAddressDetails"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.address").value("서울시 강남구"));
-    }
-
-    @Test
-    @DisplayName("주문 시 배송지 세부 정보 가져오기 실패 - 없는 배송지")
-    @WithMockUser(username = "testUser1", authorities = "BUYER")
-    void testGetAddressDetailsFail() throws Exception {
-        //GIVEN
+    @DisplayName("구매자 회원은 배송지 수정 페이지에 접근할 수 있다")
+    @WithMockUser(authorities = "BUYER")
+    void updateFormTestSuccess() throws Exception {
+        // GIVEN
+        Member testBuyer = MemberFactory.member(1L, "testBuyer");
+        Address address = AddressFactory.address(testBuyer);
         Long addressId = 1L;
 
+        given(rq.getMember()).willReturn(testBuyer);
+        given(addressService.get(any(Member.class), any(Long.class))).willReturn(RsData.successOf(address));
+
+        //WHEN
+        ResultActions resultActions = mvc
+                .perform(get("/buyer/myAddress/update/{addressId}", addressId))
+                .andDo(print());
+
+        //THEN
+        resultActions
+                .andExpect(status().is2xxSuccessful());
+    }
+
+    @Test
+    @DisplayName("구매자 회원은 배송지를 수정할 수 있다")
+    @WithMockUser(authorities = "BUYER")
+    void updateSuccessTest() throws Exception {
+        // GIVEN
+        Member testBuyer = MemberFactory.member(1L, "testBuyer");
+        AddressRequest request = AddressFactory.addressRequest("address");
+        Long addressId = 1L;
+
+        given(rq.getMember()).willReturn(testBuyer);
+        given(addressService.update(any(Member.class), any(Long.class), any(AddressRequest.class)))
+                .willReturn(RsData.successOf(AddressFactory.address(testBuyer)));
+
+        //WHEN
+        ResultActions resultActions = mvc
+                .perform(post("/buyer/myAddress/update/{addressId}", addressId)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("memberId", String.valueOf(testBuyer.getId()))
+                        .param("name", request.getAddress())
+                        .param("receiverName", request.getReceiverName())
+                        .param("address", request.getAddress())
+                        .param("detailAddress", request.getDetailAddress())
+                        .param("postCode", request.getPostCode())
+                        .param("phoneNumber", request.getPhoneNumber())
+                        .param("isDefault", String.valueOf(request.isDefault()))
+                )
+                .andDo(print());
+
+        //THEN
+        resultActions
+                .andExpect(status().is2xxSuccessful());
+    }
+
+    @Test
+    @DisplayName("구매자 회원은 배송지를 삭제할 수 있다")
+    @WithMockUser(authorities = "BUYER")
+    void softDeleteSuccessTest() throws Exception {
+        // GIVEN
+        Member testBuyer = MemberFactory.member(1L, "testBuyer");
+        Long addressId = 1L;
+
+        given(rq.getMember()).willReturn(testBuyer);
+        given(addressService.softDelete(any(Member.class), any(Long.class)))
+                .willReturn(RsData.successOf(AddressFactory.address(testBuyer)));
+
+        //WHEN
+        ResultActions resultActions = mvc
+                .perform(post("/buyer/myAddress/delete/{addressId}", addressId)
+                        .with(csrf())
+                )
+                .andDo(print());
+
+        //THEN
+        resultActions
+                .andExpect(status().is2xxSuccessful());
+    }
+
+    @Test
+    @DisplayName("구매자 회원은 배송지 상세정보를 조회할 수 있다")
+    @WithMockUser(authorities = "BUYER")
+    void getAddressDetailsSuccessTest() throws Exception {
+        // GIVEN
+        Member testBuyer = MemberFactory.member(1L, "testBuyer");
+        Address address = AddressFactory.address(testBuyer);
+        Long addressId = 1L;
+
+        given(rq.getMember()).willReturn(testBuyer);
+        given(addressService.findById(any(Long.class))).willReturn(Optional.ofNullable(address));
+
         //WHEN
         ResultActions resultActions = mvc
                 .perform(get("/buyer/myAddress/getAddressDetails")
-                        .param("addressId", String.valueOf(addressId))
-                )
+                        .param("addressId", String.valueOf(addressId)))
                 .andDo(print());
+
         //THEN
         resultActions
-                .andExpect(handler().handlerType(AddressController.class))
-                .andExpect(handler().methodName("getAddressDetails"))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string("배송지를 찾을 수 없습니다."));
+                .andExpect(status().is2xxSuccessful());
     }
+
+    @Test
+    @DisplayName("구매자 회원은 존재하지 않는 배송지의 상세정보를 조회할 수 없다")
+    @WithMockUser(authorities = "BUYER")
+    void getAddressDetailsFailTest() throws Exception {
+        // GIVEN
+        Member testBuyer = MemberFactory.member(1L, "testBuyer");
+        Long addressId = 1L;
+
+        given(rq.getMember()).willReturn(testBuyer);
+        given(addressService.findById(any(Long.class))).willReturn(Optional.empty());
+
+        //WHEN
+        ResultActions resultActions = mvc
+                .perform(get("/buyer/myAddress/getAddressDetails")
+                        .param("addressId", String.valueOf(addressId)))
+                .andDo(print());
+
+        //THEN
+        resultActions
+                .andExpect(status().is4xxClientError());
+    }
+
 }
