@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableJpaAuditing
 @EntityScan
 @EnableScheduling
 @EnableSchedulerLock(defaultLockAtMostFor = "PT1M") // 작업 진행 중 중단 된 경우 Lock을 유지할 기본 시간

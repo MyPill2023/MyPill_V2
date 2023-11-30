@@ -1,7 +1,6 @@
 package com.mypill.domain.member.controller;
 
 import com.mypill.domain.member.dto.request.JoinRequest;
-import com.mypill.domain.member.entity.Member;
 import com.mypill.domain.member.service.MemberService;
 import com.mypill.domain.member.validation.EmailValidationResult;
 import com.mypill.domain.member.validation.UsernameValidationResult;
@@ -18,7 +17,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 @TestMethodOrder(MethodOrderer.MethodName.class)
-class MemberControllerUnitTests {
+class MemberControllerUnitTest {
 
     private MockMvc mvc;
     @InjectMocks
@@ -43,7 +43,7 @@ class MemberControllerUnitTests {
     }
 
     @Test
-    @DisplayName("비로그인 상태에서 로그인 페이지 접근이 가능하다")
+    @DisplayName("로그인 페이지 이동")
     @WithAnonymousUser
     void showLoginSuccessUnitTest() throws Exception {
         // WHEN
@@ -60,7 +60,7 @@ class MemberControllerUnitTests {
     }
 
     @Test
-    @DisplayName("비로그인 상태에서 회원가입 페이지 접근이 가능하다")
+    @DisplayName("회원가입 페이지 이동")
     @WithAnonymousUser
     void showJoinSuccessUnitTest() throws Exception {
         // WHEN
@@ -77,12 +77,12 @@ class MemberControllerUnitTests {
     }
 
     @Test
-    @DisplayName("비로그인 상태에 회원가입을 할 수 있다")
+    @DisplayName("회원가입 성공")
     @WithAnonymousUser
     void joinSuccessUnitTest() throws Exception {
         // GIVEN
-        given(memberService.join(any(JoinRequest.class))).willReturn(RsData.successOf(new Member()));
-        given(rq.redirectWithMsg(any(String.class), any(String.class))).willCallRealMethod();
+        doReturn(RsData.of("S-1", "")).when(memberService).join(any(JoinRequest.class));
+        doCallRealMethod().when(rq).redirectWithMsg(any(String.class), any(String.class));
 
         // WHEN
         ResultActions resultActions = mvc
@@ -105,12 +105,11 @@ class MemberControllerUnitTests {
     }
 
     @Test
-    @DisplayName("회원가입 시 아이디 중복확인을 할 수 있다")
+    @DisplayName("아이디 중복확인")
     void usernameCheckUnitTest() throws Exception {
         // GIVEN
         String username = "testUser1";
-
-        given(memberService.usernameValidation(any(String.class))).willReturn(UsernameValidationResult.VALIDATION_OK);
+        doReturn(UsernameValidationResult.VALIDATION_OK).when(memberService).usernameValidation(any(String.class));
 
         // WHEN
         ResultActions resultActions = mvc
@@ -131,12 +130,11 @@ class MemberControllerUnitTests {
     }
 
     @Test
-    @DisplayName("회원가입 시 이메일 중복확인을 할 수 있다")
+    @DisplayName("이메일 중복확인")
     void emailCheckUnitTest() throws Exception {
         // GIVEN
         String email = "testEmail@test.com";
-
-        given(memberService.emailValidation(any(String.class))).willReturn(EmailValidationResult.VALIDATION_OK);
+        doReturn(EmailValidationResult.VALIDATION_OK).when(memberService).emailValidation(any(String.class));
 
         // WHEN
         ResultActions resultActions = mvc

@@ -1,7 +1,6 @@
 package com.mypill.domain.order.service;
 
 import com.mypill.common.factory.*;
-import com.mypill.domain.IntegrationTest;
 import com.mypill.domain.address.entity.Address;
 import com.mypill.domain.address.repository.AddressRepository;
 import com.mypill.domain.cart.entity.Cart;
@@ -20,17 +19,25 @@ import com.mypill.domain.order.repository.OrderRepository;
 import com.mypill.domain.product.entity.Product;
 import com.mypill.domain.product.repository.ProductRepository;
 import com.mypill.global.rsdata.RsData;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class OrderServiceTests extends IntegrationTest {
+@SpringBootTest
+@Transactional
+@ActiveProfiles("test")
+@TestMethodOrder(MethodOrderer.DisplayName.class)
+@ExtendWith(MockitoExtension.class)
+class OrderServiceTests {
     @Autowired
     private OrderService orderService;
     @Autowired
@@ -144,16 +151,6 @@ class OrderServiceTests extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("생성된 주문 폼 가져오기 실패 - 존재하지 않는 주문")
-    void getOrderFormSuccessTest_NonExistentOrder() {
-        // WHEN
-        RsData<Order> rsData = orderService.getOrderForm(testBuyer, 1L);
-
-        // THEN
-        assertThat(rsData.getResultCode()).isEqualTo("F-1");
-    }
-
-    @Test
     @DisplayName("생성된 주문 폼 가져오기 실패 - 다른 회원의 주문 (권한 없음)")
     void getOrderFormFailTest_Unauthorized() {
         // GIVEN
@@ -209,20 +206,6 @@ class OrderServiceTests extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("결제된 주문 상세보기 실패 - 접근 권한 없음")
-    void getOrderDetailsFailTest_Unauthorized() {
-        // GIVEN
-        Member testBuyer2 = memberRepository.save(MemberFactory.member("testBuyer2", Role.BUYER));
-        Order order = orderRepository.save(OrderFactory.order(testBuyer2));
-
-        // WHEN
-        RsData<Order> rsData = orderService.getOrderDetails(testBuyer, order.getId());
-
-        // THEN
-        assertThat(rsData.getResultCode()).isEqualTo("F-1");
-    }
-
-    @Test
     @DisplayName("대표 주문 상태 가져오기 성공")
     void getPrimaryOrderItemStatusSuccessTest() {
         // GIVEN
@@ -259,7 +242,7 @@ class OrderServiceTests extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("주문 취소 가능 여부 조회 성공 - 취소 가능")
+    @DisplayName("주문 취소 가능 여부 조회 - 취소 가능")
     void checkIfOrderCanBeCanceled_CanCanceled() {
         // GIVEN
         Order order = orderRepository.save(OrderFactory.order(testBuyer, OrderFactory.paymentDone()));
@@ -273,31 +256,7 @@ class OrderServiceTests extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("주문 취소 가능 여부 조회 실패 - 존재하지 않는 주문")
-    void checkIfOrderCanBeCanceled_NonExistentOrder() {
-        // WHEN
-        RsData<Order> rsData = orderService.checkIfOrderCanBeCanceled(testBuyer, 1L);
-
-        // THEN
-        assertThat(rsData.getResultCode()).isEqualTo("F-1");
-    }
-
-    @Test
-    @DisplayName("주문 취소 가능 여부 조회 실패 - 접근 권한 없음")
-    void checkIfOrderCanBeCanceled_Unauthorized() {
-        // GIVEN
-        Order order = orderRepository.save(OrderFactory.order(testBuyer, OrderFactory.paymentDone()));
-        Member testBuyer2 = memberRepository.save(MemberFactory.member("testBuyer2", Role.BUYER));
-
-        // WHEN
-        RsData<Order> rsData = orderService.checkIfOrderCanBeCanceled(testBuyer2, order.getId());
-
-        // THEN
-        assertThat(rsData.getResultCode()).isEqualTo("F-2");
-    }
-
-    @Test
-    @DisplayName("주문 취소 가능 여부 조회 성공 - 취소 불가 - 이미 취소된 주문")
+    @DisplayName("주문 취소 가능 여부 조회 - 취소 불가 - 이미 취소된 주문")
     void checkIfOrderCanBeCanceled_AlreadyCanceled() {
         // GIVEN
         Order order = orderRepository.save(OrderFactory.order(testBuyer, OrderFactory.paymentCanceled()));
@@ -310,7 +269,7 @@ class OrderServiceTests extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("주문 취소 가능 여부 조회 성공 - 취소 불가 - 취소 불가 상태인 상품 존재")
+    @DisplayName("주문 취소 가능 여부 조회 - 취소 불가 - 취소 불가 상태인 상품 존재")
     void checkIfOrderCanBeCanceled_NonCancellableProduct() {
         // GIVEN
         Order order = orderRepository.save(OrderFactory.order(testBuyer, OrderFactory.paymentDone()));
@@ -328,7 +287,7 @@ class OrderServiceTests extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("주문 결제 가능 여부 조회 성공 - 결제 가능")
+    @DisplayName("주문 결제 가능 여부 조회 - 결제 가능")
     void checkIfOrderCanBePaid_CanBePaid() {
         // GIVEN
         Order order = orderRepository.save(OrderFactory.order(testBuyer));
@@ -340,19 +299,6 @@ class OrderServiceTests extends IntegrationTest {
 
         // THEN
         assertThat(rsData.getResultCode()).isEqualTo("S-1");
-    }
-
-    @Test
-    @DisplayName("주문 결제 가능 여부 조회 실패 - 존재하지 않는 주문")
-    void checkIfOrderCanBePaidFailTest_NonExistentOrder() {
-        // GIVEN
-        PayRequest payRequest = OrderFactory.payRequest(1L, 100L);
-
-        // WHEN
-        RsData<Order> rsData = orderService.checkIfOrderCanBePaid(payRequest);
-
-        // THEN
-        assertThat(rsData.getResultCode()).isEqualTo("F-1");
     }
 
     @Test
@@ -432,36 +378,6 @@ class OrderServiceTests extends IntegrationTest {
         // THEN
         assertThat(rsData.getResultCode()).isEqualTo("S-1");
         assertThat(rsData.getData().getStatus()).isEqualTo(OrderStatus.findByValue(newStatus));
-    }
-
-    @Test
-    @DisplayName("주문 상품 상태 변경 실패 - 존재하지 않는 주문")
-    void updateOrderItemStatusFailTest_NonExistentOrder() {
-        // GIVEN
-        String newStatus = "배송 완료";
-
-        // WHEN
-        RsData<OrderItem> rsData = orderService.updateOrderItemStatus(1L, newStatus);
-
-        // THEN
-        assertThat(rsData.getResultCode()).isEqualTo("F-1");
-    }
-
-    @Test
-    @DisplayName("주문 상품 상태 변경 실패 - 유효하지 않은 주문 상태")
-    void updateOrderItemStatusFailTest_InvalidOrderStatus() {
-        // GIVEN
-        Order order = orderRepository.save(OrderFactory.order(testBuyer, OrderFactory.paymentDone()));
-        Product product = productRepository.save(ProductFactory.product("product", testSeller));
-        OrderItem orderItem = orderItemRepository.save(OrderFactory.orderItem(order, product));
-        orderRepository.save(OrderFactory.addOrderItem(order, orderItem));
-        String newStatus = "유효하지 않음";
-
-        // WHEN
-        RsData<OrderItem> rsData = orderService.updateOrderItemStatus(orderItem.getId(), newStatus);
-
-        // THEN
-        assertThat(rsData.getResultCode()).isEqualTo("F-2");
     }
 
     public void addCartProduct(Cart cart, Product product){

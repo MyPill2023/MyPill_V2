@@ -109,12 +109,12 @@ public class OrderController {
         if (validateRsData.isFail()) {
             return rq.historyBack(validateRsData);
         }
-        RsData<PayResponse> payRsData = tossPaymentService.pay(validateRsData.getData(), payRequest);
+        RsData<?> payRsData = tossPaymentService.pay(validateRsData.getData(), payRequest);
         if (payRsData.isFail()) {
             model.addAttribute("payResponse", payRsData.getData());
             return rq.historyBack(payRsData);
         }
-        return rq.redirectWithMsg("/order/detail/%s".formatted(payRsData.getData().getOrder().getId()), payRsData);
+        return rq.redirectWithMsg("/order/detail/%s".formatted(((Order) payRsData.getData()).getId()), payRsData);
     }
 
     @PreAuthorize("hasAuthority('BUYER')")
@@ -133,7 +133,7 @@ public class OrderController {
         if (checkRsData.isFail()) {
             return rq.historyBack(checkRsData);
         }
-        RsData<PayResponse> cancelRsData = tossPaymentService.cancel(checkRsData.getData());
+        RsData<?> cancelRsData = tossPaymentService.cancel(checkRsData.getData());
         if (cancelRsData.isFail()) {
             return rq.historyBack(cancelRsData);
         }
@@ -143,7 +143,7 @@ public class OrderController {
     @PreAuthorize("hasAuthority('SELLER')")
     @GetMapping("/management/{orderId}")
     @Operation(summary = "판매자의 주문 관리 페이지")
-    public String showManagement(@PathVariable Long orderId, Model model) {
+    public String management(@PathVariable Long orderId, Model model) {
         RsData<Order> orderDetailRsData = orderService.getOrderDetails(rq.getMember(), orderId);
         if (orderDetailRsData.isFail()) {
             return rq.historyBack(orderDetailRsData);

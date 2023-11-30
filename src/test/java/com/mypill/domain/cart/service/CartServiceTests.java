@@ -2,7 +2,6 @@ package com.mypill.domain.cart.service;
 
 import com.mypill.common.factory.MemberFactory;
 import com.mypill.common.factory.ProductFactory;
-import com.mypill.domain.IntegrationTest;
 import com.mypill.domain.cart.dto.request.CartProductRequest;
 import com.mypill.domain.cart.entity.Cart;
 import com.mypill.domain.cart.entity.CartProduct;
@@ -13,16 +12,21 @@ import com.mypill.domain.member.repository.MemberRepository;
 import com.mypill.domain.product.entity.Product;
 import com.mypill.domain.product.repository.ProductRepository;
 import com.mypill.global.rsdata.RsData;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class CartServiceTests  extends IntegrationTest {
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional
+@TestMethodOrder(MethodOrderer.DisplayName.class)
+class CartServiceTests {
     @Autowired
     private CartService cartService;
     @Autowired

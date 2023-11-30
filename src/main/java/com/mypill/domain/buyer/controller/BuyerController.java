@@ -41,7 +41,7 @@ public class BuyerController {
     @PreAuthorize("hasAuthority('BUYER')")
     @GetMapping("/myLikes")
     @Operation(summary = "내 관심상품 페이지")
-    public String showMyLikes(Model model) {
+    public String myLikes(Model model) {
         List<Long> productIds = productLikeService.findProductIdsByMemberId(rq.getMember().getId());
         List<Product> products = productService.findByIdIn(productIds);
         model.addAttribute("productsResponse", ProductsResponse.of(products));
@@ -51,14 +51,14 @@ public class BuyerController {
     @PreAuthorize("hasAuthority('BUYER')")
     @GetMapping("/mySchedule")
     @Operation(summary = "내 복약관리 페이지")
-    public String showMySchedule() {
+    public String mySchedule() {
         return "usr/buyer/mySchedule";
     }
 
     @PreAuthorize("hasAuthority('BUYER')")
     @GetMapping("/myOrder")
     @Operation(summary = "내 주문 페이지")
-    public String showMyOrder(Model model) {
+    public String myOrder(Model model) {
         List<Order> orders = orderService.findByBuyerId(rq.getMember().getId());
         List<OrderItem> orderItems = orderService.findOrderItemByBuyerId(rq.getMember().getId());
         Map<OrderStatus, Long> orderStatusCount = orderService.getOrderStatusCount(orderItems);
@@ -69,7 +69,7 @@ public class BuyerController {
     @PreAuthorize("hasAuthority('BUYER')")
     @GetMapping("/myAddress")
     @Operation(summary = "내 배송지 페이지")
-    public String showMyAddress(Model model) {
+    public String myAddress(Model model) {
         List<Address> addresses = addressService.findByMemberId(rq.getMember().getId());
         List<AddressResponse> addressResponses = addresses.stream()
                 .map(AddressResponse::of).toList();

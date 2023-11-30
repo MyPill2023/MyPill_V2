@@ -1,7 +1,6 @@
 package com.mypill.domain.member.service;
 
 import com.mypill.common.factory.MemberFactory;
-import com.mypill.domain.IntegrationTest;
 import com.mypill.domain.attr.service.AttrService;
 import com.mypill.domain.member.dto.request.JoinRequest;
 import com.mypill.domain.member.entity.Member;
@@ -9,35 +8,45 @@ import com.mypill.domain.member.entity.Role;
 import com.mypill.domain.member.repository.MemberRepository;
 import com.mypill.domain.member.validation.EmailValidationResult;
 import com.mypill.domain.member.validation.UsernameValidationResult;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class MemberServiceTests extends IntegrationTest {
+@SpringBootTest
+@Transactional
+@ActiveProfiles("test")
+@TestMethodOrder(MethodOrderer.MethodName.class)
+class MemberServiceTest {
     @Autowired
     private MemberService memberService;
     @Autowired
     private AttrService attrService;
     @Autowired
     private MemberRepository memberRepository;
+    private Member testMember;
+
+    @BeforeEach
+    void beforeEach() {
+        testMember = memberRepository.save(MemberFactory.member("testMember"));
+    }
 
     @Test
     @DisplayName("자체회원가입 테스트")
     void joinTest() {
-        // GIVEN
-        JoinRequest joinRequest = MemberFactory.joinRequest("testMember");
-
         // WHEN
-        Member testMember = memberService.join(joinRequest).getData();
+        Member testUser2 = memberService.join(new JoinRequest("testUser2", "김영희", "1234", "test2@test.com", "구매자")).getData();
 
         // THEN
-        assertThat(testMember).isNotNull();
-        assertThat(testMember.getUsername()).isEqualTo(joinRequest.getUsername());
-        assertThat(testMember.getName()).isEqualTo(joinRequest.getName());
-        assertThat(testMember.getEmail()).isEqualTo(joinRequest.getEmail());
+        assertThat(testUser2).isNotNull();
+        assertThat(testUser2.getUsername()).isEqualTo("testUser2");
+        assertThat(testUser2.getName()).isEqualTo("김영희");
+        assertThat(testUser2.getRole()).isEqualTo(Role.BUYER);
+        assertThat(testUser2.getEmail()).isEqualTo("test2@test.com");
     }
 
     @Test
@@ -45,28 +54,22 @@ class MemberServiceTests extends IntegrationTest {
     void whenSocialLoginTest() {
         // GIVEN
         String providerCode = "K";
-        String username = "testMember";
-        String name = "name";
-        String email = "testMember@test.com";
 
         // WHEN
-        Member testMember = memberService.whenSocialLogin(providerCode, username, name, email).getData();
+        Member savedMember = memberService.whenSocialLogin(providerCode, "testUser3", "김짱구", "test9@test.com").getData();
 
         // THEN
-        assertThat(testMember).isNotNull();
-        assertThat(testMember.getUsername()).isEqualTo(username);
-        assertThat(testMember.getName()).isEqualTo(name);
-        assertThat(testMember.getRole()).isEqualTo(Role.BUYER);
-        assertThat(testMember.getEmail()).isEqualTo(email);
-        assertThat(testMember.getProviderTypeCode()).isEqualTo(providerCode);
+        assertThat(savedMember).isNotNull();
+        assertThat(savedMember.getUsername()).isEqualTo("testUser3");
+        assertThat(savedMember.getName()).isEqualTo("김짱구");
+        assertThat(savedMember.getRole()).isEqualTo(Role.BUYER);
+        assertThat(savedMember.getEmail()).isEqualTo("test9@test.com");
+        assertThat(savedMember.getProviderTypeCode()).isEqualTo(providerCode);
     }
 
     @Test
     @DisplayName("ID로 회원검색 테스트")
     void findByIdTest() {
-        // GIVEN
-        Member testMember = memberRepository.save(MemberFactory.member("testMember"));
-
         // WHEN
         Member member = memberService.findById(testMember.getId()).orElse(null);
 
@@ -79,9 +82,6 @@ class MemberServiceTests extends IntegrationTest {
     @Test
     @DisplayName("회원 아이디로 회원검색 테스트")
     void findByUsernameTest() {
-        // GIVEN
-        Member testMember = memberRepository.save(MemberFactory.member("testMember"));
-
         // WHEN
         Member member = memberService.findByUsername(testMember.getUsername()).orElse(null);
 
@@ -94,9 +94,7 @@ class MemberServiceTests extends IntegrationTest {
     @Test
     @DisplayName("회원정보 - 이름 변경")
     void updateNameTest() {
-        // GIVEN
-        Member testMember = memberRepository.save(MemberFactory.member("testMember"));
-        String newName = "newName";
+        String newName = "손흥민";
 
         // WHEN
         Member member = memberService.updateName(testMember, newName).getData();
@@ -112,9 +110,6 @@ class MemberServiceTests extends IntegrationTest {
     @Test
     @DisplayName("회원 탈퇴")
     void deleteAccountTest() {
-        // GIVEN
-        Member testMember = memberRepository.save(MemberFactory.member("testMember"));
-
         // WHEN
         Member deletedMember = memberService.softDelete(testMember).getData();
 
@@ -141,10 +136,10 @@ class MemberServiceTests extends IntegrationTest {
     @DisplayName("회원가입 아이디 유효성 검증 테스트2 : 중복")
     void usernameValidationTest2() {
         // GIVEN
-        Member testMember = memberRepository.save(MemberFactory.member("testMember"));
+        String username = testMember.getUsername();
 
         // WHEN
-        UsernameValidationResult result = memberService.usernameValidation(testMember.getUsername());
+        UsernameValidationResult result = memberService.usernameValidation(username);
 
         // THEN
         assertThat(result).isEqualTo(UsernameValidationResult.USERNAME_DUPLICATE);
@@ -193,10 +188,10 @@ class MemberServiceTests extends IntegrationTest {
     @DisplayName("회원가입 이메일 유효성 검증 테스트3 : 중복")
     void emailValidationTest3() {
         // GIVEN
-        Member testMember = memberRepository.save(MemberFactory.member("testMember"));
+        String email = testMember.getEmail();
 
         // WHEN
-        EmailValidationResult result = memberService.emailValidation(testMember.getEmail());
+        EmailValidationResult result = memberService.emailValidation(email);
 
         // THEN
         assertThat(result).isEqualTo(EmailValidationResult.EMAIL_DUPLICATE);
@@ -219,7 +214,6 @@ class MemberServiceTests extends IntegrationTest {
     @DisplayName("이메일 인증")
     void verifyEmailTest() {
         // GIVEN
-        Member testMember = memberRepository.save(MemberFactory.member("testMember"));
         String emailVerificationCode = "member__%d__extra__emailVerificationCode".formatted(testMember.getId());
         String attr = attrService.get(emailVerificationCode, "");
 

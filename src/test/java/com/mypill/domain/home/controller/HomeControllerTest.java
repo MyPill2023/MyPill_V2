@@ -1,36 +1,77 @@
 package com.mypill.domain.home.controller;
 
-import com.mypill.common.fixture.TProduct;
-import com.mypill.domain.ControllerTest;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import com.mypill.domain.member.dto.request.JoinRequest;
+import com.mypill.domain.member.service.MemberService;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
-import static org.mockito.BDDMockito.given;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class HomeControllerTest extends ControllerTest {
+@SpringBootTest
+@Transactional
+@AutoConfigureMockMvc(addFilters = false)
+@ActiveProfiles("test")
+@TestMethodOrder(MethodOrderer.MethodName.class)
+class HomeControllerTest {
+    @Autowired
+    private MockMvc mvc;
+    @Autowired
+    private MemberService memberService;
+
+    @BeforeEach
+    void beforeEach() {
+    }
 
     @Test
-    @DisplayName("메인페이지에 접근할 수 있다")
-    @WithMockUser
-    void showMainSuccessTest() throws Exception {
-        // GIVEN
-        given(productService.getTop5ProductsBySales())
-                .willReturn(List.of(TProduct.PRODUCT_1.getProduct()));
-
+    @WithAnonymousUser
+    @DisplayName("메인페이지 이동 - 비로그인")
+    void showMainTest1() throws Exception {
         // WHEN
         ResultActions resultActions = mvc
-                .perform(get("/"))
+                .perform(get("/")
+                        .with(csrf())
+                )
                 .andDo(print());
 
         // THEN
         resultActions
-                .andExpect(status().is2xxSuccessful());
+                .andExpect(handler().handlerType(HomeController.class))
+                .andExpect(handler().methodName("showMain"))
+                .andExpect(status().is2xxSuccessful())
+        ;
+    }
+
+    @Test
+    @WithMockUser(username = "testUser1", authorities = "MEMBER")
+    @DisplayName("메인페이지 이동 - 로그인")
+    void showMainTest2() throws Exception {
+        // GIVEN
+        memberService.join(new JoinRequest("testUser1", "김철수", "1234", "test1@test.com", "판매자"));
+
+        // WHEN
+        ResultActions resultActions = mvc
+                .perform(get("/")
+                        .with(csrf())
+                )
+                .andDo(print());
+
+        // THEN
+        resultActions
+                .andExpect(handler().handlerType(HomeController.class))
+                .andExpect(handler().methodName("showMain"))
+                .andExpect(status().is2xxSuccessful())
+        ;
     }
 }

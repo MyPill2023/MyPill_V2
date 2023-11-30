@@ -2,7 +2,6 @@ package com.mypill.domain.order.dto.response;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mypill.domain.order.dto.request.PayRequest;
-import com.mypill.domain.order.entity.Order;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,16 +10,9 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class PayResponse {
-    private Order order;
     private String orderNumber;
     private String message;
     private String code;
-
-    public static PayResponse of(Order order) {
-        return PayResponse.builder()
-                .order(order)
-                .build();
-    }
 
     public static PayResponse of(PayRequest payRequest, JsonNode failNode) {
         return PayResponse.builder()
