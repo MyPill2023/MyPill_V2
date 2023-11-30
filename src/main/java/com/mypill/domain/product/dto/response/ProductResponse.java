@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +33,6 @@ public class ProductResponse {
     private String sellerName;
     private boolean isLiked;
     private String imageFilePath;
-    private LocalDateTime deleteDate;
 
     public static ProductResponse createProductResponse(Product product, boolean isLikedInput) {
         return ProductResponse.builder()
@@ -50,7 +48,6 @@ public class ProductResponse {
                 .sellerName(product.getSeller().getName())
                 .isLiked(isLikedInput)
                 .imageFilePath(Optional.ofNullable(product.getImage()).map(Image::getFilepath).orElse("/image-null"))
-                .deleteDate(product.getDeleteDate())
                 .build();
     }
 

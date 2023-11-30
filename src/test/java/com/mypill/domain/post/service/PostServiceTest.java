@@ -2,7 +2,6 @@ package com.mypill.domain.post.service;
 
 import com.mypill.common.factory.MemberFactory;
 import com.mypill.common.factory.PostFactory;
-import com.mypill.domain.IntegrationTest;
 import com.mypill.domain.member.entity.Member;
 import com.mypill.domain.member.repository.MemberRepository;
 import com.mypill.domain.post.dto.request.PostRequest;
@@ -10,11 +9,12 @@ import com.mypill.domain.post.dto.response.PostResponse;
 import com.mypill.domain.post.entity.Post;
 import com.mypill.domain.post.repository.PostRepository;
 import com.mypill.global.rsdata.RsData;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,7 +22,11 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class PostServiceTests extends IntegrationTest {
+@SpringBootTest
+@Transactional
+@ActiveProfiles("test")
+@TestMethodOrder(MethodOrderer.MethodName.class)
+class PostServiceTest {
     @Autowired
     private PostService postService;
     @Autowired

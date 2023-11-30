@@ -17,18 +17,12 @@ public class MockPost {
     }
 
     public static class Builder{
-        private Long id;
         private Long posterId;
         private String title;
         private String content;
         private List<Comment> comments = new ArrayList<>();
         private Image image;
         private LocalDateTime deleteDate;
-
-        public Builder id(Long id){
-            this.id = id;
-            return this;
-        }
 
         public Builder posterId(Long posterId){
             this.posterId = posterId;
@@ -57,7 +51,6 @@ public class MockPost {
 
         public Post build() {
             return Post.builder()
-                    .id(id)
                     .posterId(posterId)
                     .title(title)
                     .content(content)

@@ -28,7 +28,7 @@ public class TossPaymentService {
     private final ObjectMapper objectMapper;
 
     @Transactional
-    public RsData<PayResponse> pay(Order order, PayRequest payRequest) {
+    public RsData<?> pay(Order order, PayRequest payRequest) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Basic " + Base64.getEncoder().encodeToString((AppConfig.getTossPaymentSecretKey() + ":").getBytes()));
@@ -46,7 +46,7 @@ public class TossPaymentService {
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 Payment payment = extractMessageFromResponse(responseEntity);
                 orderService.updateOrderAsPaymentDone(order, payRequest.getOrderId(), Long.parseLong(payRequest.getAddressId()), payment);
-                return RsData.of("S-1", "주문이 완료되었습니다.", PayResponse.of(order));
+                return RsData.of("S-1", "주문이 완료되었습니다.", order);
             } else {
                 JsonNode failNode = responseEntity.getBody();
                 return RsData.of("F-2", "결제 실패", PayResponse.of(payRequest, failNode));
@@ -57,7 +57,7 @@ public class TossPaymentService {
     }
 
     @Transactional
-    public RsData<PayResponse> cancel(Order order) {
+    public RsData<?> cancel(Order order) {
         try {
             String paymentKey = order.getPayment().getPaymentKey();
 
@@ -80,7 +80,7 @@ public class TossPaymentService {
                 String status = responseEntity.getBody().get("status").asText();
 
                 orderService.updateOrderAsCancel(order, cancelDate, status);
-                return RsData.of("S-1", "주문번호 %s의 </br> 주문 및 결제가 취소되었습니다.".formatted(order.getOrderNumber()), PayResponse.of(order));
+                return RsData.of("S-1", "주문번호 %s의 </br> 주문 및 결제가 취소되었습니다.".formatted(order.getOrderNumber()), order);
             } else {
                 JsonNode failNode = responseEntity.getBody();
                 PayResponse payResponse = PayResponse.of(failNode);

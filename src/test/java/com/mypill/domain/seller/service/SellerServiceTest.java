@@ -1,18 +1,22 @@
 package com.mypill.domain.seller.service;
 
 import com.mypill.common.factory.MemberFactory;
-import com.mypill.domain.IntegrationTest;
 import com.mypill.domain.member.entity.Member;
 import com.mypill.domain.member.entity.Role;
 import com.mypill.domain.member.repository.MemberRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SellerServiceTests extends IntegrationTest {
+@SpringBootTest
+@Transactional
+@ActiveProfiles("test")
+@TestMethodOrder(MethodOrderer.MethodName.class)
+class SellerServiceTest {
     @Autowired
     private SellerService sellerService;
     @Autowired

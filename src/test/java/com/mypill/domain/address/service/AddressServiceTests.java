@@ -2,7 +2,6 @@ package com.mypill.domain.address.service;
 
 import com.mypill.common.factory.AddressFactory;
 import com.mypill.common.factory.MemberFactory;
-import com.mypill.domain.IntegrationTest;
 import com.mypill.domain.address.dto.request.AddressRequest;
 import com.mypill.domain.address.entity.Address;
 import com.mypill.domain.address.repository.AddressRepository;
@@ -11,15 +10,20 @@ import com.mypill.domain.member.entity.Role;
 import com.mypill.domain.member.repository.MemberRepository;
 import com.mypill.global.AppConfig;
 import com.mypill.global.rsdata.RsData;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
-class AddressServiceTests extends IntegrationTest {
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional
+@TestMethodOrder(MethodOrderer.DisplayName.class)
+class AddressServiceTests {
 
     @Autowired
     private AddressService addressService;

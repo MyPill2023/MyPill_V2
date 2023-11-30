@@ -2,17 +2,17 @@ package com.mypill.domain.product.service;
 
 import com.mypill.common.factory.MemberFactory;
 import com.mypill.common.factory.ProductFactory;
-import com.mypill.domain.IntegrationTest;
 import com.mypill.domain.member.entity.Member;
 import com.mypill.domain.member.entity.Role;
 import com.mypill.domain.member.repository.MemberRepository;
 import com.mypill.domain.product.dto.request.ProductRequest;
-import com.mypill.domain.product.dto.response.ProductResponse;
 import com.mypill.domain.product.entity.Product;
 import com.mypill.domain.product.repository.ProductRepository;
 import com.mypill.global.rsdata.RsData;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,8 +23,11 @@ import java.util.concurrent.Executors;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+@SpringBootTest
+@Transactional
+@ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class ProductServiceTests extends IntegrationTest {
+class ProductServiceTests {
 
     @Autowired
     private ProductService productService;
@@ -51,11 +54,11 @@ class ProductServiceTests extends IntegrationTest {
     @Order(1)
     void createSuccessTests() {
         // WHEN
-        RsData<ProductResponse> rsData = productService.create(ProductFactory.mockProductRequest("testProduct"), testSeller1);
+        Product testProduct = productService.create(ProductFactory.mockProductRequest("testProduct"), testSeller1).getData();
 
         // THEN
-        assertThat(rsData.getResultCode()).isEqualTo("S-1");
-        assertThat(rsData.getData().getName()).isEqualTo("testProduct");
+        assertThat(testProduct).isNotNull();
+        assertThat(testProduct.getName()).isEqualTo("testProduct");
     }
 
     @Test
@@ -66,12 +69,12 @@ class ProductServiceTests extends IntegrationTest {
         Product testProduct = productRepository.save(ProductFactory.product("testProduct", testSeller1));
 
         // WHEN
-        RsData<ProductResponse> getRsData = productService.get(testProduct.getId());
+        RsData<Product> getRsData = productService.get(testProduct.getId());
 
         // THEN
         assertThat(getRsData.getResultCode()).isEqualTo("S-1");
         assertThat(getRsData.getData().getName()).isEqualTo("testProduct");
-        assertThat(getRsData.getData().getId()).isEqualTo(testProduct.getId());
+        assertThat(getRsData.getData().getSeller().getId()).isEqualTo(testSeller1.getId());
     }
 
     @Test
@@ -83,11 +86,12 @@ class ProductServiceTests extends IntegrationTest {
         ProductRequest request = ProductFactory.mockProductRequest("newProduct");
 
         // WHEN
-        RsData<ProductResponse> updateRsData = productService.update(testSeller1, testProduct.getId(), request);
+        RsData<Product> updateRsData = productService.update(testSeller1, testProduct.getId(), request);
+        Product updateProduct = updateRsData.getData();
 
         // THEN
         assertThat(updateRsData.getResultCode()).isEqualTo("S-1");
-        assertThat(updateRsData.getData().getName()).isEqualTo("newProduct");
+        assertThat(updateProduct.getName()).isEqualTo("newProduct");
     }
 
     @Test
@@ -100,7 +104,7 @@ class ProductServiceTests extends IntegrationTest {
         ProductRequest request = ProductFactory.mockProductRequest("newProduct");
 
         // WHEN
-        RsData<ProductResponse> updateRsData = productService.update(testSeller2, testProduct.getId(), request);
+        RsData<Product> updateRsData = productService.update(testSeller2, testProduct.getId(), request);
 
         // THEN
         assertThat(updateRsData.getResultCode()).isEqualTo("F-2");
@@ -114,11 +118,13 @@ class ProductServiceTests extends IntegrationTest {
         Product testProduct = productRepository.save(ProductFactory.product("testProduct", testSeller1));
 
         // WHEN
-        RsData<ProductResponse> deleteRsData = productService.softDelete(testSeller1, testProduct.getId());
+        RsData<Product> deleteRsData = productService.softDelete(testSeller1, testProduct.getId());
+        Product deletedProduct = deleteRsData.getData();
 
         // THEN
         assertThat(deleteRsData.getResultCode()).isEqualTo("S-1");
-        assertThat(deleteRsData.getData().getDeleteDate()).isNotNull();
+        assertThat(deletedProduct).isNotNull();
+        assertThat(deletedProduct.getDeleteDate()).isNotNull();
     }
 
     @Test
@@ -130,7 +136,7 @@ class ProductServiceTests extends IntegrationTest {
         Product testProduct = productRepository.save(ProductFactory.product("testProduct", testSeller1));
 
         //WHEN
-        RsData<ProductResponse> deleteRsData = productService.softDelete(testSeller2, testProduct.getId());
+        RsData<Product> deleteRsData = productService.softDelete(testSeller2, testProduct.getId());
         Product deletedProduct = productRepository.findById(testProduct.getId()).orElse(null);
 
         //THEN
