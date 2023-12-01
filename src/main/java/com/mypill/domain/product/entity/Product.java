@@ -88,8 +88,15 @@ public class Product extends BaseEntity implements ImageOperator {
     }
 
     public void updateStockAndSalesByOrder(Long quantity) {
+        validateStockCount();
         this.stock -= quantity;
         this.sales += quantity;
+    }
+
+    private void validateStockCount() {
+        if (stock < 1) {
+            throw new IllegalArgumentException();
+        }
     }
 
     public void plusLikeCount() {
