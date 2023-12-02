@@ -1,4 +1,4 @@
-package com.mypill.global.redis;
+package com.mypill.global.redis.redisson;
 
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;

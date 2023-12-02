@@ -93,12 +93,6 @@ public class Product extends BaseEntity implements ImageOperator {
         this.sales += quantity;
     }
 
-    private void validateStockCount() {
-        if (stock < 1) {
-            throw new IllegalArgumentException();
-        }
-    }
-
     public void plusLikeCount() {
         this.likeCount += 1;
     }
@@ -115,5 +109,11 @@ public class Product extends BaseEntity implements ImageOperator {
     @Override
     public String getFolderName() {
         return "product";
+    }
+
+    private void validateStockCount() {
+        if (stock < 1) {
+            throw new IllegalArgumentException();
+        }
     }
 }
