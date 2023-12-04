@@ -149,7 +149,7 @@ class ProductServiceTests extends IntegrationTest {
         Product testProduct = productRepository.save(ProductFactory.product("testProduct", testSeller1));
 
         int threadCount = 100;
-        ExecutorService executorService = Executors.newFixedThreadPool(32); // ThreadPool 구성
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount); // ThreadPool 구성
         CountDownLatch latch = new CountDownLatch(threadCount); // 다른 스레드에서 작업이 완료될 때까지 대기
 
         for (int i = 0; i < threadCount; i++) {
@@ -165,7 +165,7 @@ class ProductServiceTests extends IntegrationTest {
         }
         latch.await();
 
-        Product newProduct = productService.findById(testProduct.getId()).orElse(null);
+        Product newProduct = productService.findById(testProduct.getId()).orElseThrow(IllegalArgumentException::new);
         assertThat(newProduct).isNotNull();
         assertThat(newProduct.getStock()).isZero();
         assertThat(newProduct.getSales()).isEqualTo(100L);

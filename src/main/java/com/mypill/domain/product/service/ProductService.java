@@ -10,6 +10,7 @@ import com.mypill.domain.product.dto.request.ProductRequest;
 import com.mypill.domain.product.dto.response.ProductResponse;
 import com.mypill.domain.product.entity.Product;
 import com.mypill.domain.product.repository.ProductRepository;
+import com.mypill.global.redis.redisson.DistributedLock;
 import com.mypill.global.rsdata.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -83,12 +84,12 @@ public class ProductService {
         return RsData.of("S-1", "상품 삭제가 완료되었습니다.", ProductResponse.of(product));
     }
 
-    @Transactional
+   //@Transactional
     @CacheEvict(value = "product", key = "#productId")
+    @DistributedLock(key = "T(java.lang.String).format('Product_%d', #productId)")
     public void updateStockAndSalesByOrder(Long productId, Long quantity) {
-        Product lockedProduct = findByIdWithPessimisticLock(productId);
-        lockedProduct.updateStockAndSalesByOrder(quantity);
-        productRepository.saveAndFlush(lockedProduct);
+        Product product = findById(productId).orElseThrow(IllegalArgumentException::new);
+        product.updateStockAndSalesByOrder(quantity);
     }
 
     public void whenAfterLike(Product product) {
@@ -101,10 +102,6 @@ public class ProductService {
 
     public Optional<Product> findById(Long productId) {
         return productRepository.findById(productId);
-    }
-
-    public Product findByIdWithPessimisticLock(Long productId) {
-        return productRepository.findByIdWithPessimisticLock(productId);
     }
 
     public List<Product> getTop5ProductsBySales() {
